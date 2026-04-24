@@ -1,0 +1,108 @@
+## Build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+## .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.DotSettings.user
+*.rsuser
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+## Test & coverage
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+*.lcov
+
+## MAUI / Xamarin
+**/bin/
+**/obj/
+*.apk
+*.aab
+*.ipa
+*.app
+*.dSYM.zip
+*.dSYM
+
+## Visual Studio
+.vs/
+*.VC.db
+*.VC.VC.opendb
+*.VC.opendb
+*.opensdf
+*.sdf
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## VS Code (optional local overrides; keep shared settings if you use them)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Secrets & local config
+appsettings.*.local.json
+**/appsettings.*.local.json
+secrets.json
+*.pfx
+.env
+.env.*
+!.env.example
+
+## SQL Server / local DB
+*.mdf
+*.ldf
+*.ndf
+
+## EF Core (keep migrations; ignore tooling temp if any)
+*.db
+*.db-shm
+*.db-wal
+
+## Misc
+*.log
+*.tmp
+*.temp
+~$*

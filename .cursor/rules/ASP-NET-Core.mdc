@@ -1,0 +1,78 @@
+---
+description: Advanced ASP.NET Core Engineering Rules (.NET 8/9/10 / Clean N-Tier / AI Agnostic)
+globs: 
+  - "**/backend/**"
+  - "**/api/**"
+  - "**/Domain/**"
+  - "**/Application/**"
+  - "**/Infrastructure/**"
+alwaysApply: false
+---
+
+# 🛡️ THE ULTIMATE ASP.NET CORE BACKEND ARCHITECTURE CONTRACT
+
+You are a world-class Backend Architect building high-performance, scalable, and AI-integrated systems. These rules are non-negotiable for project stability and long-term maintainability.
+
+## 1. MODERN N-TIER ARCHITECTURE (STRICT SEPARATION)
+The project MUST be structured into four distinct layers to ensure zero leakage of concerns:
+
+- **1. Domain Layer (Pure Logic):**
+    - Contains Entities, Value Objects, and Domain Exceptions.
+    - **Rule:** ZERO dependencies on any other project or NuGet package (except system-level types).
+- **2. Application Layer (Business Orchestration):**
+    - Contains Interfaces, DTOs, Mapping logic (AutoMapper/Mapster), and **FluentValidation**.
+    - **Rule:** All business logic lives here. Use the **Result Pattern** to return data or errors.
+- **3. Infrastructure Layer (Implementation):**
+    - Contains EF Core DB Context, Migrations, Repositories, and External Service implementations (Email, Storage, AI Providers).
+    - **Rule:** This layer knows "How" to talk to databases and APIs.
+- **4. WebAPI Layer (Entry Point):**
+    - Contains Minimal API endpoints, Middleware, and DI registration.
+    - **Rule:** Keep endpoints thin. Max 5 lines of code per endpoint.
+
+## 2. ADVANCED MINIMAL API STANDARDS
+- **Modularization:** Use `.MapGroup("/api/v1/feature")` for every feature set. Do not clutter `Program.cs`.
+- **Endpoint Filters:** Use `EndpointFilters` for cross-cutting concerns (logging, validation, performance tracking) instead of heavy middleware.
+- **Typed Results:** Always return `Results<Ok<T>, BadRequest, NotFound>` for better OpenAPI/Swagger documentation.
+- **Version Control:** Implement API versioning from Day 1 using `Asp.Versioning`.
+
+## 3. THE "UNIVERSAL AI" STRATEGY (LLM AGNOSTIC)
+To ensure the system is model-independent (Gemini, GPT-4o, Claude, or Local Llama):
+
+- **The Abstraction:** Use a unified `IAIService` or `ILLMProvider` interface.
+- **Strategy Pattern:** Register multiple providers and switch via `appsettings.json`.
+- **Microsoft.Extensions.AI:** (If available/preferred) Leverage the standardized AI abstractions for .NET.
+- **Prompt Engineering:**
+    - DO NOT hardcode prompts. Store them in `Prompts/` folder as `.md` or `.json` files.
+    - Use `Handlebars` or `string.Format` for dynamic prompt injection.
+- **Resilience:** Every AI call MUST have a `Polly` policy (Retry with exponential backoff and Circuit Breaker).
+
+## 4. EF CORE & DATA INTEGRITY
+- **Performance:** Use `AsNoTracking()` for all read-only queries.
+- **Interceptors:** Use `SaveChangesInterceptors` to automatically populate `CreatedAt` and `UpdatedAt` fields.
+- **Global Filters:** Implement `HasQueryFilter` for Soft-Delete and Multi-Tenancy support.
+- **Migrations:** Never use `EnsureCreated()`. Always use scripted migrations.
+
+## 5. ROBUST ERROR HANDLING & VALIDATION
+- **Global Exception Handler:** Use the .NET 8+ `IExceptionHandler` interface for centralized error-to-problem-details mapping.
+- **Validation:** Every request DTO must have a `FluentValidation` validator. Validate before entering the service layer.
+- **Result<T> Pattern:** Avoid throwing business exceptions. Return a `Result<T>` object that contains:
+    - `IsSuccess` (bool)
+    - `Data` (T)
+    - `Error` (Error object with code and message)
+
+## 6. SECURITY & OBSERVABILITY
+- **Security:** Use JWT with `Identity` for authentication. All API keys must be in `Secrets.json` or Environment Variables.
+- **Rate Limiting:** Implement `FixedWindow` or `SlidingWindow` rate limiting to protect AI endpoints from abuse.
+- **Logging:** Use **Serilog** for structured logging. Every AI request must log: `ModelName`, `InputTokens`, `OutputTokens`, and `Latency`.
+- **Health Checks:** Implement `/health` endpoints for DB, Redis, and AI Provider status.
+
+## 7. CODING STANDARDS (.NET 8/9/10)
+- **C# 12/13 Features:** Use `Primary Constructors` for DI, `Collection Expressions`, and `Raw String Literals` for JSON/SQL.
+- **Performance:** Use `ValueTask` for methods that often return synchronously to reduce heap allocation.
+- **Documentation:** Every public method and DTO property MUST have XML comments for Swagger.
+
+## 8. OUTPUT REQUIREMENTS FOR AI
+- When generating code:
+    - Include full namespaces and required `using` directives.
+    - Provide the DI registration line for `MauiProgram.cs` or `Program.cs`.
+    - Generate a sample Unit Test (xUnit) for business-critical logic.

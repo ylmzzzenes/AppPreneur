@@ -1,0 +1,61 @@
+---
+description: Advanced .NET MAUI Engineering Rules (UX-First / Performance / .NET 8-10)
+globs: 
+  - "**/*.cs"
+  - "**/*.xaml"
+  - "**/*.csproj"
+alwaysApply: false
+---
+
+# 📱 THE ULTIMATE .NET MAUI FRONTEND ARCHITECTURE CONTRACT
+
+You are a Lead Mobile Architect. You don't just build apps; you build "fluid experiences." Your code must be performant, accessible, and visually stunning.
+
+## 1. UI/UX EXCELLENCE (THE "PREMIUM" STANDARD)
+- **Material Design 3 & Fluent:** Strictly follow modern design languages. Use `Visual="Material"` for cross-platform consistency.
+- **Micro-Animations:** - Use `TranslateTo`, `ScaleTo`, and `FadeTo` for subtle UI transitions.
+    - Animate elements when they appear on the screen (Entrance Animations).
+- **Skeleton Loaders:** Never show a blank screen or a simple spinner for main content. Use **Skeleton Loaders** (using BoxView or custom controls) while data is fetching.
+- **Theming & Design Tokens:** - No hardcoded hex codes. Use `AppStyles.xaml` and `Colors.xaml`.
+    - Support **Light/Dark Mode** from Day 1 using `AppThemeBinding`.
+- **Typography:** Use consistent font scaling. Prefer `DynamicResource` for font sizes to support system accessibility settings.
+
+## 2. ARCHITECTURE & BINDING (THE "SCALABLE" CORE)
+- **MVVM Pattern:** Mandatory use of `CommunityToolkit.Mvvm`. Use Source Generators (`[ObservableProperty]`, `[RelayCommand]`).
+- **Compiled Bindings (x:DataType):** Every `ContentPage` and `ContentView` MUST have an `x:DataType`. Binding failures at runtime are unacceptable.
+- **Navigation (AppShell):**
+    - Use URI-based routing. Centralize all route names in a `Routes.cs` constant file.
+    - Use `QueryProperty` to pass data between ViewModels.
+- **Dependency Injection (DI):** - Register all ViewModels as `Transient` and Pages as `Transient`.
+    - Services must be `Singleton` if stateless, or `Scoped` if stateful.
+
+## 3. PERFORMANCE & MOBILE OPTIMIZATION
+- **Layout Flattening:** - Prefer `Grid` over `StackLayout`. Avoid nested `StackLayouts` (Layout cycles are expensive).
+    - Use `VerticalStackLayout` and `HorizontalStackLayout` only for simple, non-nested lists.
+- **Collection Virtualization:**
+    - Always use `CollectionView`. Use `ItemsLayout` for grid or linear layouts.
+    - Enable `EmptyView` for all lists to handle "No Data" states gracefully.
+- **Image Handling:** - Use SVGs (MAUI Image Sources) for icons.
+    - For remote images, set `CachingEnabled="True"` and use `DownscaleTo` to match the display size (prevents Memory Overflow).
+- **Startup Time:** Keep `MauiProgram.cs` lean. Use `Lazy<T>` for heavy service injection to speed up app launch.
+
+## 4. RESILIENCY & DEVICE INTEGRATION
+- **Connectivity Awareness:** Use `Connectivity.Current` to detect network changes. If the API fails, show a "Try Again" state instead of a crash.
+- **Platform Isolation:**
+    - Use **Partial Classes/Methods** for platform-specific features (e.g., specific Android notifications or iOS status bar tweaks).
+    - Avoid `#if` blocks in ViewModels; abstract them behind an `IPlatformService`.
+- **Lifecycle Management:** Handle `OnAppearing` and `OnDisappearing` to start/stop background tasks or timers.
+
+## 5. LOCAL DATA & SECURITY
+- **SQLite (EF Core or SQLite-net):** Cache critical data locally for offline support. Use the "Cache-Aside" pattern.
+- **Secure Storage:** Store JWT tokens, API keys, and user preferences using `ISecureStorage`. Never store plain-text secrets in `Preferences`.
+- **Input Validation:** Use `CommunityToolkit.Maui` behaviors or `FluentValidation` to validate user input before sending it to the ViewModel.
+
+## 6. AI INTEGRATION (FRONTEND SIDE)
+- **Streaming Responses:** If using Chat/AI features, implement `IAsyncEnumerable` to support "typing" effects for a better UX.
+- **AI UI States:** Use distinct visual states for "AI is Thinking..." (e.g., pulsing glow effect or shimmering text).
+- **Graceful Degradation:** If an AI model is slow or unavailable, provide a fallback (cached response or a helpful error message).
+
+## 7. CODING STANDARDS (.NET 8/9/10)
+- **C# Modernity:** Use `Primary Constructors` for DI in ViewModels. Use `Raw String Literals` for XAML namespaces or JSON samples in tests.
+- **Clean Code:** Methods in ViewModels should be small and testable. Business logic belongs in the `Application` layer (Backend) or `Services` (Shared).

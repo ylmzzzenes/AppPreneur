@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="UniFlow.Mobile.Views.RegisterPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
+    x:DataType="vm:RegisterViewModel"
+    Title="Kayıt">
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+            <Label
+                FontAttributes="Bold"
+                FontSize="22"
+                Text="Yeni hesap" />
+            <Label Text="Bilgilerini gir; giriş otomatik yapılır." />
+            <Entry Placeholder="Görünen ad" Text="{Binding DisplayName}" />
+            <Entry
+                Keyboard="Email"
+                Placeholder="E-posta"
+                Text="{Binding Email}" />
+            <Entry
+                IsPassword="True"
+                Placeholder="Şifre (en az 8 karakter)"
+                Text="{Binding Password}" />
+            <Label
+                Text="{Binding StatusMessage}"
+                TextColor="{AppThemeBinding Light=#C62828,
+                                            Dark=#FF8A80}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Button Command="{Binding RegisterCommand}" Text="Kayıt ol" />
+            <Button Command="{Binding GoBackCommand}" Text="Geri" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="UniFlow.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:UniFlow.Mobile.Views"
+    Title="UniFlow"
+    Shell.FlyoutBehavior="Disabled">
+
+    <ShellContent
+        Title="Giriş"
+        ContentTemplate="{DataTemplate views:LoginPage}"
+        Route="Login" />
+
+    <TabBar Route="MainTabs">
+        <ShellContent
+            Title="Görevler"
+            ContentTemplate="{DataTemplate views:DashboardPage}"
+            Route="Dashboard" />
+        <ShellContent
+            Title="Sohbet"
+            ContentTemplate="{DataTemplate views:ChatPage}"
+            Route="Chat" />
+        <ShellContent
+            Title="Müfredat"
+            ContentTemplate="{DataTemplate views:SyllabusPage}"
+            Route="Syllabus" />
+    </TabBar>
+</Shell>

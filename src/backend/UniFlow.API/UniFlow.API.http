@@ -1,0 +1,6 @@
+@UniFlow.API_HostAddress = http://localhost:5087
+
+GET {{UniFlow.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

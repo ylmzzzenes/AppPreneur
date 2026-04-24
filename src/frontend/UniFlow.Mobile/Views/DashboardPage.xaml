@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="UniFlow.Mobile.Views.DashboardPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:UniFlow.Mobile.Models"
+    xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
+    x:DataType="vm:DashboardViewModel"
+    Title="Görevler">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding LogoutCommand}" Text="Çıkış" />
+    </ContentPage.ToolbarItems>
+    <Grid Padding="12" RowDefinitions="Auto,Auto,*">
+        <VerticalStackLayout Grid.Row="0" Margin="0,0,0,8" Spacing="6">
+            <Label
+                Text="Öncelikli görevler"
+                FontAttributes="Bold"
+                FontSize="18" />
+            <Label
+                FontSize="12"
+                Opacity="0.65"
+                Text="Sohbet ve müfredat (ders dökümanı) için ekranın altındaki sekmelere dokun." />
+        </VerticalStackLayout>
+        <Label
+            Grid.Row="1"
+            Margin="0,0,0,8"
+            Text="{Binding StatusMessage}"
+            TextColor="{AppThemeBinding Light=#C62828,
+                                        Dark=#FF8A80}" />
+        <RefreshView
+            Grid.Row="2"
+            Command="{Binding LoadCommand}"
+            IsRefreshing="{Binding IsLoading, Mode=OneWay}">
+            <CollectionView ItemsSource="{Binding Tasks}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Padding="24" Spacing="8">
+                        <Label
+                            HorizontalTextAlignment="Center"
+                            Text="Henüz görev yok."
+                            FontSize="16" />
+                        <Label
+                            HorizontalTextAlignment="Center"
+                            Opacity="0.7"
+                            Text="Müfredat yükleyerek veya bekleyerek listeyi doldurabilirsin." />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TaskItemResponseDto">
+                        <Border
+                            Margin="0,0,0,10"
+                            Padding="14"
+                            StrokeShape="RoundRectangle 12">
+                            <VerticalStackLayout Spacing="6">
+                                <Label FontAttributes="Bold" Text="{Binding Title}" />
+                                <Label Opacity="0.85" Text="{Binding CourseCode, StringFormat='Ders: {0}'}" />
+                                <Label Opacity="0.85" Text="{Binding CourseTitle, StringFormat='{0}'}" />
+                                <Label Opacity="0.85" Text="{Binding DueDate, StringFormat='Son tarih: {0:d}'}" />
+                                <Label Opacity="0.85" Text="{Binding PriorityScore, StringFormat='Öncelik: {0}'}" />
+                                <Label Opacity="0.75" Text="{Binding Description}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

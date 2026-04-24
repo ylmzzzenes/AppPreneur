@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="UniFlow.Mobile.Views.ChatPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:UniFlow.Mobile.Models"
+    xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
+    x:DataType="vm:ChatViewModel"
+    Title="Sarkastik Dahi">
+    <Grid Padding="12" RowDefinitions="*,Auto" RowSpacing="12">
+        <CollectionView Grid.Row="0" ItemsSource="{Binding Messages}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:ChatMessageModel">
+                    <Border
+                        Margin="0,0,0,10"
+                        Padding="14"
+                        MaximumWidthRequest="320"
+                        StrokeShape="RoundRectangle 16">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="HorizontalOptions" Value="Start" />
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#EEEEEE, Dark=#424242}" />
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding IsFromUser}"
+                                        TargetType="Border"
+                                        Value="True">
+                                        <Setter Property="HorizontalOptions" Value="End" />
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E8EAF6, Dark=#5C6BC0}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <VerticalStackLayout Spacing="6">
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="12"
+                                Opacity="0.85"
+                                Text="{Binding RoleLabel}" />
+                            <Label Text="{Binding Text}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <VerticalStackLayout Grid.Row="1" Spacing="8">
+            <Label
+                Text="{Binding StatusMessage}"
+                TextColor="{AppThemeBinding Light=#C62828,
+                                            Dark=#FF8A80}" />
+            <ActivityIndicator IsRunning="{Binding IsThinking}" IsVisible="{Binding IsThinking}" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry
+                    Grid.Column="0"
+                    Placeholder="Mesajını yaz..."
+                    Text="{Binding DraftMessage}" />
+                <Button
+                    Grid.Column="1"
+                    Command="{Binding SendCommand}"
+                    Text="Gönder" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
