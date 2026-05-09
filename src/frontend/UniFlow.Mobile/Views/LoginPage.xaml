@@ -5,29 +5,200 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:LoginViewModel"
-    Title="Giriş">
+    Title=""
+    BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
+                                      Dark={StaticResource SurfacePageDark}}">
     <ScrollView>
-        <VerticalStackLayout Padding="24" Spacing="16">
+        <VerticalStackLayout
+            Padding="30,32,30,36"
+            Spacing="25"
+            VerticalOptions="Start">
+            <!-- Logo alanı -->
+            <Border
+                Padding="0"
+                HeightRequest="88"
+                WidthRequest="88"
+                Margin="0,0,0,4"
+                HorizontalOptions="Center"
+                StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LoginHeroCircleLight},
+                                                  Dark={StaticResource LoginHeroCircleDark}}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="28" />
+                </Border.StrokeShape>
+                <Label
+                    FontFamily="OpenSansSemibold"
+                    FontSize="36"
+                    HorizontalOptions="Center"
+                    Text="U"
+                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                Dark={StaticResource IndigoBrandDark}}"
+                    VerticalOptions="Center" />
+            </Border>
+
+            <VerticalStackLayout Spacing="8">
+                <!-- Marka ExtraBold’a yakın: Semibold + büyük punto -->
+                <Label
+                    FontFamily="OpenSansSemibold"
+                    FontSize="36"
+                    HorizontalTextAlignment="Center"
+                    Text="UniFlow"
+                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                Dark={StaticResource IndigoBrandDark}}" />
+                <Label
+                    FontFamily="OpenSansRegular"
+                    FontSize="15"
+                    HorizontalTextAlignment="Center"
+                    Opacity="0.95"
+                    Text="Hesabınla giriş yap."
+                    TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                Dark={StaticResource SlateSubtitleDark}}" />
+            </VerticalStackLayout>
+
+            <!-- E-posta -->
+            <Border
+                Padding="12,10"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LoginFieldFillLight},
+                                                  Dark={StaticResource FieldFillDark}}"
+                Stroke="{AppThemeBinding Light={StaticResource LoginFieldStrokeIdle},
+                                         Dark={StaticResource LoginFieldStrokeIdleDark}}"
+                StrokeThickness="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+                    <Label
+                        Grid.Column="0"
+                        FontSize="18"
+                        Text="📧"
+                        TextColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                    Dark={StaticResource SlateSubtitleDark}}"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center" />
+                    <Entry
+                        Grid.Column="1"
+                        BackgroundColor="Transparent"
+                        Focused="OnFieldFocused"
+                        FontFamily="OpenSansRegular"
+                        FontSize="15"
+                        Keyboard="Email"
+                        Placeholder="E-posta"
+                        PlaceholderColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                          Dark={StaticResource SlateSubtitleDark}}"
+                        Text="{Binding Email}"
+                        TextColor="{AppThemeBinding Light={StaticResource Black},
+                                                   Dark={StaticResource White}}"
+                        Unfocused="OnFieldUnfocused"
+                        VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Şifre -->
+            <Border
+                Padding="12,10"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LoginFieldFillLight},
+                                                  Dark={StaticResource FieldFillDark}}"
+                Stroke="{AppThemeBinding Light={StaticResource LoginFieldStrokeIdle},
+                                         Dark={StaticResource LoginFieldStrokeIdleDark}}"
+                StrokeThickness="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid
+                    ColumnDefinitions="Auto,*,Auto"
+                    ColumnSpacing="8"
+                    VerticalOptions="Center">
+                    <Label
+                        Grid.Column="0"
+                        FontSize="17"
+                        Text="🔒"
+                        TextColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                    Dark={StaticResource SlateSubtitleDark}}"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center" />
+                    <Entry
+                        Grid.Column="1"
+                        BackgroundColor="Transparent"
+                        Focused="OnFieldFocused"
+                        FontFamily="OpenSansRegular"
+                        FontSize="15"
+                        IsPassword="{Binding ObscurePassword}"
+                        Placeholder="Şifre"
+                        PlaceholderColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                          Dark={StaticResource SlateSubtitleDark}}"
+                        Text="{Binding Password}"
+                        TextColor="{AppThemeBinding Light={StaticResource Black},
+                                                   Dark={StaticResource White}}"
+                        Unfocused="OnFieldUnfocused"
+                        VerticalOptions="Center" />
+                    <Label
+                        Grid.Column="2"
+                        FontSize="17"
+                        HorizontalOptions="End"
+                        HorizontalTextAlignment="Center"
+                        MinimumHeightRequest="44"
+                        MinimumWidthRequest="44"
+                        Text="👁"
+                        TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                    Dark={StaticResource SlateSubtitleDark}}"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding TogglePasswordVisibilityCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+            </Border>
+
             <Label
-                FontAttributes="Bold"
-                FontSize="28"
-                Text="UniFlow" />
-            <Label Text="Hesabınla giriş yap." />
-            <Entry
-                Keyboard="Email"
-                Placeholder="E-posta"
-                Text="{Binding Email}" />
-            <Entry
-                IsPassword="True"
-                Placeholder="Şifre"
-                Text="{Binding Password}" />
-            <Label
+                Margin="0,-8,0,0"
                 Text="{Binding StatusMessage}"
                 TextColor="{AppThemeBinding Light=#C62828,
                                             Dark=#FF8A80}" />
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-            <Button Command="{Binding LoginCommand}" Text="Giriş yap" />
-            <Button Command="{Binding OpenRegisterCommand}" Text="Hesap oluştur" />
+
+            <ActivityIndicator
+                Margin="0,-8,0,0"
+                HorizontalOptions="Center"
+                Color="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                         Dark={StaticResource IndigoBrandDark}}"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}" />
+
+            <VerticalStackLayout Spacing="14" Margin="0,6,0,0">
+                <Button
+                    BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                      Dark={StaticResource IndigoBrandDark}}"
+                    BorderWidth="0"
+                    Command="{Binding LoginCommand}"
+                    CornerRadius="12"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="16"
+                    HeightRequest="52"
+                    Text="Giriş yap"
+                    TextColor="White">
+                    <Button.Shadow>
+                        <Shadow
+                            Brush="#406366F1"
+                            Opacity="0.42"
+                            Radius="18"
+                            Offset="0,8" />
+                    </Button.Shadow>
+                </Button>
+
+                <Button
+                    BackgroundColor="Transparent"
+                    BorderColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                  Dark={StaticResource IndigoBrandDark}}"
+                    BorderWidth="1"
+                    Command="{Binding OpenRegisterCommand}"
+                    CornerRadius="12"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="15"
+                    HeightRequest="48"
+                    Text="Hesap oluştur"
+                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                               Dark={StaticResource IndigoBrandDark}}" />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
