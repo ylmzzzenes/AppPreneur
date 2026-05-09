@@ -15,13 +15,47 @@ public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
     [ObservableProperty]
     private string? pickedFileLabel;
 
+    partial void OnPickedFileLabelChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasPickedFile));
+    }
+
+    public bool HasPickedFile => !string.IsNullOrWhiteSpace(PickedFileLabel);
+
     [ObservableProperty]
     private string? statusMessage;
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        OnPropertyChanged(nameof(ShowStatusBanner));
+    }
+
+    public bool ShowStatusBanner => !string.IsNullOrWhiteSpace(StatusMessage);
 
     [ObservableProperty]
     private bool isBusy;
 
     private FileResult? _pickedFile;
+
+    [RelayCommand]
+    private async Task ChooseFileSourceAsync(CancellationToken cancellationToken)
+    {
+        var page = Shell.Current?.CurrentPage;
+        if (page is null)
+            return;
+
+        var pick = await page.DisplayActionSheet(
+            "Dosya ekle",
+            "İptal",
+            null,
+            "Galeriden seç",
+            "Kamerayla çek");
+
+        if (pick == "Galeriden seç")
+            await PickPhotoAsync(cancellationToken).ConfigureAwait(false);
+        else if (pick == "Kamerayla çek")
+            await CapturePhotoAsync(cancellationToken).ConfigureAwait(false);
+    }
 
     [RelayCommand]
     private async Task PickPhotoAsync(CancellationToken cancellationToken)

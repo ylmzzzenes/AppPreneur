@@ -5,25 +5,256 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:SyllabusViewModel"
-    Title="Müfredat">
-    <ScrollView>
-        <VerticalStackLayout Padding="24" Spacing="16">
-            <Label
-                FontAttributes="Bold"
-                FontSize="18"
-                Text="Müfredattan görev çıkar" />
-            <Label Opacity="0.85" Text="Ders bilgilerini gir; fotoğrafı galeriden seç veya kamerayla çek." />
-            <Entry Placeholder="Ders kodu (örn. CS101)" Text="{Binding CourseCode}" />
-            <Entry Placeholder="Ders adı" Text="{Binding CourseTitle}" />
-            <Label FontAttributes="Bold" Text="Seçilen dosya" />
-            <Label Text="{Binding PickedFileLabel}" />
-            <HorizontalStackLayout Spacing="12">
-                <Button Command="{Binding PickPhotoCommand}" Text="Galeriden seç" />
-                <Button Command="{Binding CapturePhotoCommand}" Text="Kamerayla çek" />
-            </HorizontalStackLayout>
-            <Label Text="{Binding StatusMessage}" />
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-            <Button Command="{Binding UploadCommand}" Text="Yükle ve işle" />
-        </VerticalStackLayout>
-    </ScrollView>
+    Title=""
+    BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
+                                      Dark={StaticResource SurfacePageDark}}">
+    <Grid RowDefinitions="*,Auto" RowSpacing="0">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="24,16,24,96" Spacing="20">
+                <!-- Başlık -->
+                <VerticalStackLayout Spacing="6">
+                    <Label
+                        FontFamily="OpenSansSemibold"
+                        FontSize="26"
+                        Text="Müfredat işle"
+                        TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                                    Dark={StaticResource White}}" />
+                    <Label
+                        FontFamily="OpenSansRegular"
+                        FontSize="15"
+                        LineHeight="1.25"
+                        Text="Ders detaylarını gir; müfredat görselini ekle — AI görev çıkarmayı başlatır."
+                        TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                    Dark={StaticResource SlateSubtitleDark}}" />
+                </VerticalStackLayout>
+
+                <!-- Ders bilgileri kartı -->
+                <Border
+                    Padding="16"
+                    BackgroundColor="#F8FAFC"
+                    Stroke="{AppThemeBinding Light=#E2E8F0,
+                                             Dark=#334155}}"
+                    StrokeThickness="1">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="14">
+                        <Border
+                            Padding="12,10"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource LoginFieldFillLight},
+                                                              Dark=#27272A}"
+                            Stroke="{AppThemeBinding Light={StaticResource LoginFieldStrokeIdle},
+                                                     Dark=#475569}}"
+                            StrokeThickness="1">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <Label
+                                    Grid.Column="0"
+                                    FontSize="18"
+                                    Text="🏷️"
+                                    TextColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                                Dark={StaticResource SlateSubtitleDark}}"
+                                    VerticalOptions="Center" />
+                                <Entry
+                                    Grid.Column="1"
+                                    BackgroundColor="Transparent"
+                                    FontFamily="OpenSansRegular"
+                                    FontSize="15"
+                                    Placeholder="Ders kodu (örn. CS101)"
+                                    PlaceholderColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                                      Dark={StaticResource SlateSubtitleDark}}"
+                                    Text="{Binding CourseCode}"
+                                    TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                                               Dark={StaticResource White}}"
+                                    VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+
+                        <Border
+                            Padding="12,10"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource LoginFieldFillLight},
+                                                              Dark=#27272A}"
+                            Stroke="{AppThemeBinding Light={StaticResource LoginFieldStrokeIdle},
+                                                     Dark=#475569}}"
+                            StrokeThickness="1">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <Label
+                                    Grid.Column="0"
+                                    FontSize="18"
+                                    Text="📘"
+                                    TextColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                                Dark={StaticResource SlateSubtitleDark}}"
+                                    VerticalOptions="Center" />
+                                <Entry
+                                    Grid.Column="1"
+                                    BackgroundColor="Transparent"
+                                    FontFamily="OpenSansRegular"
+                                    FontSize="15"
+                                    Placeholder="Ders adı"
+                                    PlaceholderColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                                      Dark={StaticResource SlateSubtitleDark}}"
+                                    Text="{Binding CourseTitle}"
+                                    TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                                               Dark={StaticResource White}}"
+                                    VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Dosya alanı (kesik kenarlık) -->
+                <Label
+                    FontFamily="OpenSansSemibold"
+                    FontSize="15"
+                    Text="Müfredat dosyası"
+                    TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                               Dark={StaticResource White}}" />
+
+                <Border
+                    Margin="0,0,0,4"
+                    Padding="24,20"
+                    BackgroundColor="{AppThemeBinding Light=#F5F3FF,
+                                                      Dark=#1E1B4B}"
+                    MinimumHeightRequest="140"
+                    SemanticProperties.Description="Dosya eklemek için dokunun; galeri veya kamera seçilir."
+                    Stroke="{AppThemeBinding Light=#996366F1, Dark=#99818CF8}"
+                    StrokeThickness="2">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="15" />
+                    </Border.StrokeShape>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ChooseFileSourceCommand}" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout
+                        Spacing="8"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center">
+                        <Label
+                            FontSize="42"
+                            HorizontalTextAlignment="Center"
+                            Opacity="0.9"
+                            Text="+"
+                            TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                        Dark={StaticResource IndigoBrandDark}}" />
+                        <Label
+                            FontFamily="OpenSansSemibold"
+                            FontSize="16"
+                            HorizontalTextAlignment="Center"
+                            Text="Dosya eklemek için dokun"
+                            TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                        Dark={StaticResource IndigoBrandDark}}" />
+                        <Label
+                            FontFamily="OpenSansRegular"
+                            FontSize="13"
+                            HorizontalTextAlignment="Center"
+                            HorizontalOptions="Fill"
+                            IsVisible="{Binding HasPickedFile}"
+                            LineBreakMode="MiddleTruncation"
+                            MaxLines="2"
+                            Text="{Binding PickedFileLabel}"
+                            TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                        Dark={StaticResource SlateSubtitleDark}}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Kısayol düğmeler -->
+                <Label
+                    FontFamily="OpenSansRegular"
+                    FontSize="13"
+                    HorizontalTextAlignment="Center"
+                    Opacity="0.85"
+                    Text="Ya da doğrudan:"
+                    TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                Dark={StaticResource SlateSubtitleDark}}" />
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
+                    <Button
+                        BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                          Dark={StaticResource IndigoBrandDark}}"
+                        BorderWidth="0"
+                        Command="{Binding PickPhotoCommand}"
+                        CornerRadius="10"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="14"
+                        HeightRequest="42"
+                        MinimumWidthRequest="140"
+                        Text="Galeriden seç"
+                        TextColor="White" />
+                    <Button
+                        BackgroundColor="Transparent"
+                        BorderColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                      Dark={StaticResource IndigoBrandDark}}"
+                        BorderWidth="1.5"
+                        Command="{Binding CapturePhotoCommand}"
+                        CornerRadius="10"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="14"
+                        HeightRequest="42"
+                        MinimumWidthRequest="140"
+                        Text="Kamerayla çek"
+                        TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                   Dark={StaticResource IndigoBrandDark}}" />
+                </HorizontalStackLayout>
+
+                <!-- Durum -->
+                <Border
+                    Padding="14,12"
+                    BackgroundColor="{AppThemeBinding Light=#F8FAFC,
+                                                      Dark=#27272A}"
+                    IsVisible="{Binding ShowStatusBanner}"
+                    Stroke="#E2E8F0"
+                    StrokeThickness="1">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+                    <Label
+                        FontFamily="OpenSansRegular"
+                        FontSize="14"
+                        LineBreakMode="WordWrap"
+                        Text="{Binding StatusMessage}"
+                        TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                                    Dark={StaticResource SlateSubtitleDark}}" />
+                </Border>
+
+                <ActivityIndicator
+                    HorizontalOptions="Center"
+                    Color="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                             Dark={StaticResource IndigoBrandDark}}"
+                    IsRunning="{Binding IsBusy}"
+                    IsVisible="{Binding IsBusy}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Sabit ana aksiyon -->
+        <Grid
+            Grid.Row="1"
+            Padding="16,12,16,20"
+            BackgroundColor="{AppThemeBinding Light=#80FFFFFF,
+                                              Dark=#E018181B}}">
+            <Button
+                BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                  Dark={StaticResource IndigoBrandDark}}"
+                BorderWidth="0"
+                Command="{Binding UploadCommand}"
+                CornerRadius="15"
+                FontFamily="OpenSansSemibold"
+                FontSize="16"
+                HeightRequest="56"
+                MinimumHeightRequest="56"
+                Text="Yükle ve işle"
+                TextColor="White">
+                <Button.Shadow>
+                    <Shadow
+                        Brush="#606366F1"
+                        Opacity="0.55"
+                        Radius="20"
+                        Offset="0,6" />
+                </Button.Shadow>
+            </Button>
+        </Grid>
+    </Grid>
 </ContentPage>
