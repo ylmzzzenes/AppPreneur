@@ -6,58 +6,284 @@
     xmlns:models="clr-namespace:UniFlow.Mobile.Models"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:ChatViewModel"
-    Title="Sarkastik Dahi">
-    <Grid Padding="12" RowDefinitions="*,Auto" RowSpacing="12">
-        <CollectionView Grid.Row="0" ItemsSource="{Binding Messages}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:ChatMessageModel">
-                    <Border
-                        Margin="0,0,0,10"
-                        Padding="14"
-                        MaximumWidthRequest="320"
-                        StrokeShape="RoundRectangle 16">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="HorizontalOptions" Value="Start" />
-                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#EEEEEE, Dark=#424242}" />
-                                <Style.Triggers>
+    Title=""
+    BackgroundColor="{AppThemeBinding Light={StaticResource White},
+                                      Dark={StaticResource OffBlack}}">
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
+        <!-- Üst başlık -->
+        <Grid
+            Grid.Row="0"
+            Padding="16,12"
+            BackgroundColor="{AppThemeBinding Light={StaticResource White},
+                                              Dark={StaticResource OffBlack}}"
+            ColumnDefinitions="Auto,*"
+            ColumnSpacing="10">
+            <Border
+                Grid.Column="0"
+                WidthRequest="42"
+                HeightRequest="42"
+                Padding="0"
+                BackgroundColor="{AppThemeBinding Light=#206366F1,
+                                                  Dark=#40818CF8}}"
+                StrokeThickness="0"
+                VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <Ellipse />
+                </Border.StrokeShape>
+                <Label
+                    FontSize="17"
+                    HorizontalOptions="Center"
+                    Text="🧠"
+                    VerticalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center" />
+            </Border>
+            <HorizontalStackLayout
+                Grid.Column="1"
+                Spacing="8"
+                VerticalOptions="Center">
+                <Label
+                    FontFamily="OpenSansSemibold"
+                    FontSize="20"
+                    Text="Sarkastik Dahi"
+                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                Dark={StaticResource IndigoBrandDark}}"
+                    VerticalOptions="Center" />
+                <BoxView
+                    WidthRequest="10"
+                    HeightRequest="10"
+                    CornerRadius="5"
+                    Color="#22C55E"
+                    VerticalOptions="Center" />
+                <Label
+                    FontFamily="OpenSansRegular"
+                    FontSize="13"
+                    Text="Çevrimiçi"
+                    TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                Dark={StaticResource SlateSubtitleDark}}"
+                    VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Grid>
+
+        <BoxView
+            Grid.Row="0"
+            VerticalOptions="End"
+            HeightRequest="1"
+            Color="{AppThemeBinding Light=#E2E8F0,
+                                    Dark=#334155}}" />
+
+        <!-- Mesaj listesi + yazıyor -->
+        <Grid Grid.Row="1" RowDefinitions="*,Auto" RowSpacing="0">
+            <CollectionView
+                Grid.Row="0"
+                ItemsSource="{Binding Messages}"
+                SelectionMode="None"
+                VerticalOptions="Fill">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ChatMessageModel">
+                        <HorizontalStackLayout Padding="4,0,4,10" HorizontalOptions="Fill">
+                            <Border
+                                Padding="14,12"
+                                MaximumWidthRequest="300"
+                                StrokeThickness="0"
+                                VerticalOptions="Start">
+                                <Border.Triggers>
                                     <DataTrigger
                                         Binding="{Binding IsFromUser}"
                                         TargetType="Border"
                                         Value="True">
                                         <Setter Property="HorizontalOptions" Value="End" />
-                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E8EAF6, Dark=#5C6BC0}" />
+                                        <Setter Property="Margin" Value="52,0,12,0" />
+                                        <Setter Property="BackgroundColor" Value="{StaticResource IndigoBrand}" />
+                                        <Setter Property="StrokeShape">
+                                            <Setter.Value>
+                                                <RoundRectangle CornerRadius="18,18,2,18" />
+                                            </Setter.Value>
+                                        </Setter>
                                     </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <VerticalStackLayout Spacing="6">
-                            <Label
-                                FontAttributes="Bold"
-                                FontSize="12"
-                                Opacity="0.85"
-                                Text="{Binding RoleLabel}" />
-                            <Label Text="{Binding Text}" />
-                        </VerticalStackLayout>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <VerticalStackLayout Grid.Row="1" Spacing="8">
-            <Label
-                Text="{Binding StatusMessage}"
-                TextColor="{AppThemeBinding Light=#C62828,
-                                            Dark=#FF8A80}" />
-            <ActivityIndicator IsRunning="{Binding IsThinking}" IsVisible="{Binding IsThinking}" />
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <Entry
+                                    <DataTrigger
+                                        Binding="{Binding IsFromUser}"
+                                        TargetType="Border"
+                                        Value="False">
+                                        <Setter Property="HorizontalOptions" Value="Start" />
+                                        <Setter Property="Margin" Value="12,0,52,0" />
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F1F5F9, Dark=#374151}" />
+                                        <Setter Property="StrokeShape">
+                                            <Setter.Value>
+                                                <RoundRectangle CornerRadius="18,18,18,2" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <!-- Varsayılan: asistan -->
+                                        <Setter Property="HorizontalOptions" Value="Start" />
+                                        <Setter Property="Margin" Value="12,0,52,0" />
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F1F5F9, Dark=#374151}" />
+                                        <Setter Property="StrokeShape">
+                                            <Setter.Value>
+                                                <RoundRectangle CornerRadius="18,18,18,2" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Border.Style>
+                                <Label
+                                    FontFamily="OpenSansRegular"
+                                    FontSize="15"
+                                    LineBreakMode="WordWrap"
+                                    Text="{Binding Text}">
+                                    <Label.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding IsFromUser}"
+                                            TargetType="Label"
+                                            Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <DataTrigger
+                                            Binding="{Binding IsFromUser}"
+                                            TargetType="Label"
+                                            Value="False">
+                                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Yazıyor göstergesi -->
+            <Border
+                x:Name="TypingPanel"
+                Grid.Row="1"
+                Margin="16,0,72,10"
+                Padding="14,12"
+                BackgroundColor="{AppThemeBinding Light=#F8FAFC,
+                                                 Dark=#27272A}"
+                HorizontalOptions="Start"
+                IsVisible="{Binding IsThinking}"
+                Stroke="{AppThemeBinding Light=#E2E8F0,
+                                         Dark=#475569}}"
+                StrokeThickness="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="16" />
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <HorizontalStackLayout
+                        x:Name="TypingDots"
+                        Spacing="5"
+                        VerticalOptions="Center">
+                        <BoxView
+                            x:Name="TypingDot1"
+                            WidthRequest="8"
+                            HeightRequest="8"
+                            CornerRadius="4"
+                            Color="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                            VerticalOptions="Center" />
+                        <BoxView
+                            x:Name="TypingDot2"
+                            WidthRequest="8"
+                            HeightRequest="8"
+                            CornerRadius="4"
+                            Color="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                            VerticalOptions="Center" />
+                        <BoxView
+                            x:Name="TypingDot3"
+                            WidthRequest="8"
+                            HeightRequest="8"
+                            CornerRadius="4"
+                            Color="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                            VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Label
+                        FontFamily="OpenSansRegular"
+                        FontSize="14"
+                        Text="Sarkastik Dahi yazıyor…"
+                        TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                    Dark={StaticResource SlateSubtitleDark}}"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Alt: hata + giriş -->
+        <VerticalStackLayout
+            Grid.Row="2"
+            Spacing="0"
+            BackgroundColor="{AppThemeBinding Light={StaticResource White},
+                                               Dark=#18181B}">
+            <Border
+                Padding="12,10"
+                Margin="12,10,12,0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource SnackErrorBgLight},
+                                                  Dark={StaticResource SnackErrorBgDark}}"
+                HorizontalOptions="Fill"
+                IsVisible="{Binding ShowStatusBanner}"
+                Stroke="#FCA5A5"
+                StrokeThickness="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Label
+                    FontFamily="OpenSansRegular"
+                    FontSize="14"
+                    LineBreakMode="WordWrap"
+                    Text="{Binding StatusMessage}"
+                    TextColor="{AppThemeBinding Light={StaticResource SnackErrorTextLight},
+                                                Dark={StaticResource SnackErrorTextDark}}" />
+            </Border>
+
+            <BoxView
+                Margin="0,10,0,0"
+                HeightRequest="1"
+                Color="{AppThemeBinding Light=#E2E8F0,
+                                        Dark=#334155}}" />
+
+            <Grid Padding="10,12,10,16" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Border
                     Grid.Column="0"
-                    Placeholder="Mesajını yaz..."
-                    Text="{Binding DraftMessage}" />
+                    Padding="12,6"
+                    BackgroundColor="{AppThemeBinding Light=#F8FAFC,
+                                                      Dark=#27272A}"
+                    Stroke="{AppThemeBinding Light=#E2E8F0,
+                                             Dark=#475569}}"
+                    StrokeThickness="1"
+                    VerticalOptions="End">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="25" />
+                    </Border.StrokeShape>
+                    <Editor
+                        x:Name="MessageEditor"
+                        AutoSize="TextChanges"
+                        FontFamily="OpenSansRegular"
+                        FontSize="15"
+                        MaxLength="4000"
+                        Placeholder="Mesajını yaz…"
+                        PlaceholderColor="{AppThemeBinding Light={StaticResource LoginPlaceholder},
+                                                          Dark={StaticResource SlateSubtitleDark}}"
+                        Text="{Binding DraftMessage}"
+                        TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                                    Dark={StaticResource White}}"
+                        VerticalOptions="Center" />
+                </Border>
+
                 <Button
                     Grid.Column="1"
+                    Margin="0,0,0,2"
+                    Padding="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                      Dark={StaticResource IndigoBrandDark}}"
                     Command="{Binding SendCommand}"
-                    Text="Gönder" />
+                    CornerRadius="26"
+                    FontSize="17"
+                    HeightRequest="52"
+                    SemanticProperties.Description="Gönder"
+                    Text="➤"
+                    TextColor="White"
+                    VerticalOptions="End"
+                    WidthRequest="52" />
             </Grid>
         </VerticalStackLayout>
     </Grid>

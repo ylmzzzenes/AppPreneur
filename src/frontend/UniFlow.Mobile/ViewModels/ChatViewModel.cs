@@ -19,6 +19,13 @@ public partial class ChatViewModel(IApiClient apiClient) : ObservableObject
     [ObservableProperty]
     private string? statusMessage;
 
+    partial void OnStatusMessageChanged(string? value)
+    {
+        OnPropertyChanged(nameof(ShowStatusBanner));
+    }
+
+    public bool ShowStatusBanner => !string.IsNullOrWhiteSpace(StatusMessage);
+
     [RelayCommand]
     private async Task SendAsync(CancellationToken cancellationToken)
     {
