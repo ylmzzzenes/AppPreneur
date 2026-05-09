@@ -5,10 +5,10 @@ using UniFlow.Mobile.Services;
 
 namespace UniFlow.Mobile.ViewModels;
 
-public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tokenStore) : ObservableObject
+public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tokenStore, IUserSessionInfo userSession) : ObservableObject
 {
     [ObservableProperty]
-    private string displayName = string.Empty;
+    private string userName = string.Empty;
 
     [ObservableProperty]
     private string email = string.Empty;
@@ -17,17 +17,33 @@ public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tok
     private string password = string.Empty;
 
     [ObservableProperty]
+    private string confirmPassword = string.Empty;
+
+    [ObservableProperty]
+    private bool obscurePassword = true;
+
+    [ObservableProperty]
     private string? statusMessage;
 
     [ObservableProperty]
     private bool isBusy;
 
     [RelayCommand]
+    private void TogglePasswordVisibility() => ObscurePassword = !ObscurePassword;
+
+    [RelayCommand]
     private async Task RegisterAsync(CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(DisplayName) || string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
+        if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(Email) ||
+            string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
         {
             StatusMessage = "Tüm alanları doldurun.";
+            return;
+        }
+
+        if (!string.Equals(Password, ConfirmPassword, StringComparison.Ordinal))
+        {
+            StatusMessage = "Şifreler eşleşmiyor.";
             return;
         }
 
@@ -50,7 +66,7 @@ public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tok
             var result = await apiClient.RegisterAsync(
                     new RegisterRequestDto
                     {
-                        DisplayName = DisplayName.Trim(),
+                        DisplayName = UserName.Trim(),
                         Email = Email.Trim(),
                         Password = Password,
                     },
@@ -65,6 +81,9 @@ public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tok
             }
 
             await tokenStore.SetTokenAsync(result.Data.AccessToken, cancellationToken).ConfigureAwait(false);
+            await MainThread.InvokeOnMainThreadAsync(() =>
+                    userSession.SetDisplayName(result.Data.DisplayName))
+                .ConfigureAwait(false);
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
                 await Shell.Current.GoToAsync($"//{Routes.MainTabs}/{Routes.Dashboard}"));

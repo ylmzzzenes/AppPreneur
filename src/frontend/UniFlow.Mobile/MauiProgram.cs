@@ -18,6 +18,7 @@ public static class MauiProgram
             });
 
         builder.Services.AddSingleton<IAuthTokenStore, SecureAuthTokenStore>();
+        builder.Services.AddSingleton<IUserSessionInfo, UserSessionInfo>();
         builder.Services.AddTransient<AuthHeaderHandler>();
         builder.Services
             .AddHttpClient<IApiClient, ApiClient>(client =>

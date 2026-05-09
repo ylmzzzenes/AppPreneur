@@ -5,7 +5,7 @@ using UniFlow.Mobile.Services;
 
 namespace UniFlow.Mobile.ViewModels;
 
-public partial class LoginViewModel(IApiClient apiClient, IAuthTokenStore tokenStore) : ObservableObject
+public partial class LoginViewModel(IApiClient apiClient, IAuthTokenStore tokenStore, IUserSessionInfo userSession) : ObservableObject
 {
     [ObservableProperty]
     private string email = string.Empty;
@@ -14,10 +14,16 @@ public partial class LoginViewModel(IApiClient apiClient, IAuthTokenStore tokenS
     private string password = string.Empty;
 
     [ObservableProperty]
+    private bool obscurePassword = true;
+
+    [ObservableProperty]
     private string? statusMessage;
 
     [ObservableProperty]
     private bool isBusy;
+
+    [RelayCommand]
+    private void TogglePasswordVisibility() => ObscurePassword = !ObscurePassword;
 
     [RelayCommand]
     private async Task LoginAsync(CancellationToken cancellationToken)
@@ -51,6 +57,9 @@ public partial class LoginViewModel(IApiClient apiClient, IAuthTokenStore tokenS
             }
 
             await tokenStore.SetTokenAsync(result.Data.AccessToken, cancellationToken).ConfigureAwait(false);
+            await MainThread.InvokeOnMainThreadAsync(() =>
+                    userSession.SetDisplayName(result.Data.DisplayName))
+                .ConfigureAwait(false);
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
                 await Shell.Current.GoToAsync($"//{Routes.MainTabs}/{Routes.Dashboard}"));
