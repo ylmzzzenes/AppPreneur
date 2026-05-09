@@ -8,7 +8,8 @@
     Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="Giriş"
+        Title=""
+        Shell.NavBarIsVisible="False"
         ContentTemplate="{DataTemplate views:LoginPage}"
         Route="Login" />
 
@@ -16,14 +17,32 @@
         <ShellContent
             Title="Görevler"
             ContentTemplate="{DataTemplate views:DashboardPage}"
-            Route="Dashboard" />
+            Route="Dashboard">
+            <ShellContent.Icon>
+                <FontImageSource
+                    Glyph="&#x2610;"
+                    Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
         <ShellContent
             Title="Sohbet"
             ContentTemplate="{DataTemplate views:ChatPage}"
-            Route="Chat" />
+            Route="Chat">
+            <ShellContent.Icon>
+                <FontImageSource
+                    Glyph="&#x1F4AC;"
+                    Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
         <ShellContent
             Title="Müfredat"
             ContentTemplate="{DataTemplate views:SyllabusPage}"
-            Route="Syllabus" />
+            Route="Syllabus">
+            <ShellContent.Icon>
+                <FontImageSource
+                    Glyph="&#x1F4D1;"
+                    Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
     </TabBar>
 </Shell>
