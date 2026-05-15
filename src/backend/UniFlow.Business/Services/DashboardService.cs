@@ -7,10 +7,16 @@ using UniFlow.Entity.Results;
 
 namespace UniFlow.Business.Services;
 
-public sealed class DashboardService(IDashboardQueries dashboardQueries) : IDashboardService
+public sealed class DashboardService(
+    IDashboardQueries dashboardQueries,
+    IUserQueries userQueries,
+    IDailyMessageService dailyMessageService) : IDashboardService
 {
     public async Task<Result<DashboardTodayResponse>> GetTodayAsync(long userId, CancellationToken cancellationToken = default)
     {
+        var personalityVibe = await userQueries.GetPersonalityVibeAsync(userId, cancellationToken).ConfigureAwait(false)
+            ?? PersonalityVibe.Friendly;
+
         var today = DateTime.UtcNow.Date;
         var rows = await dashboardQueries.ListTaskRowsForUserAsync(userId, cancellationToken).ConfigureAwait(false);
 
@@ -36,7 +42,18 @@ public sealed class DashboardService(IDashboardQueries dashboardQueries) : IDash
             r.DueDate.Value.Date == today);
 
         var overdueCount = overdue.Count;
-        var (mood, message) = ResolveAiPersona(overdueCount, completedToday);
+        var aiMood = ResolveAiMood(overdueCount, completedToday);
+
+        var dailyMessage = dailyMessageService.BuildDailyMessage(new DailyMessageContext
+        {
+            UserId = userId,
+            Today = today,
+            PersonalityVibe = personalityVibe,
+            OverdueTasksCount = overdueCount,
+            CompletedTodayCount = completedToday,
+            PendingTodayCount = pendingToday,
+            BigThreeTasks = bigThree,
+        });
 
         return Result<DashboardTodayResponse>.Success(new DashboardTodayResponse
         {
@@ -45,8 +62,9 @@ public sealed class DashboardService(IDashboardQueries dashboardQueries) : IDash
             OverdueTasksCount = overdueCount,
             CompletedTodayCount = completedToday,
             PendingTodayCount = pendingToday,
-            AiMood = mood,
-            Message = message,
+            PersonalityVibe = personalityVibe,
+            AiMood = aiMood,
+            DailyMessage = dailyMessage,
         });
     }
 
@@ -66,23 +84,23 @@ public sealed class DashboardService(IDashboardQueries dashboardQueries) : IDash
         IsOverdue = IsOverdue(row, today),
     };
 
-    private static (string Mood, string Message) ResolveAiPersona(int overdueCount, int completedTodayCount)
+    private static string ResolveAiMood(int overdueCount, int completedTodayCount)
     {
         if (overdueCount > 3)
         {
-            return ("Sarcastic", "Üçten fazla geciken işin var. Bu bir plan mı, yoksa kaos mu?");
+            return "Sarcastic";
         }
 
         if (overdueCount > 0)
         {
-            return ("Angry", "Geciken işler bekliyor. Hadi, bugün halledelim.");
+            return "Angry";
         }
 
         if (completedTodayCount >= 3)
         {
-            return ("Happy", "Bugün üç iş bitirdin. Fena değil, Dahi onaylıyor.");
+            return "Happy";
         }
 
-        return ("Neutral", "Bugün sakin bir gün. Öncelikli üç işine odaklan.");
+        return "Neutral";
     }
 }

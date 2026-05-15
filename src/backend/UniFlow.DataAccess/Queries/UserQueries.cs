@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UniFlow.DataAccess.Persistence;
 using UniFlow.Entity.Entities;
+using UniFlow.Entity.Enums;
 
 namespace UniFlow.DataAccess.Queries;
 
@@ -28,4 +29,11 @@ public sealed class UserQueries : IUserQueries
             .AsNoTracking()
             .AnyAsync(u => u.Email == normalized, cancellationToken);
     }
+
+    public Task<PersonalityVibe?> GetPersonalityVibeAsync(long userId, CancellationToken cancellationToken = default) =>
+        _dbContext.Users
+            .AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => (PersonalityVibe?)u.PersonalityVibe)
+            .FirstOrDefaultAsync(cancellationToken);
 }

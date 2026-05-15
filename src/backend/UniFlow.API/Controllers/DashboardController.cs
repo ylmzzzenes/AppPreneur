@@ -13,7 +13,7 @@ namespace UniFlow.API.Controllers;
 public sealed class DashboardController(IDashboardService dashboardService) : ControllerBase
 {
     /// <summary>
-    /// Returns today's dashboard: top 3 tasks, counts, and AI persona mood.
+    /// Returns today's dashboard: top 3 tasks, counts, AI mood, personality vibe, and a deterministic daily message.
     /// </summary>
     [HttpGet("today")]
     [ProducesResponseType(typeof(Result<DashboardTodayResponse>), StatusCodes.Status200OK)]

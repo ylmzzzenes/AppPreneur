@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniFlow.Business", "UniFlow
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniFlow.API", "UniFlow.API\UniFlow.API.csproj", "{703559B5-8DC1-4C31-B4A8-BC04A0E184FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniFlow.Business.Tests", "UniFlow.Business.Tests\UniFlow.Business.Tests.csproj", "{CCF98651-AF39-473D-9891-EC714781999A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{703559B5-8DC1-4C31-B4A8-BC04A0E184FA}.Release|x64.Build.0 = Release|Any CPU
 		{703559B5-8DC1-4C31-B4A8-BC04A0E184FA}.Release|x86.ActiveCfg = Release|Any CPU
 		{703559B5-8DC1-4C31-B4A8-BC04A0E184FA}.Release|x86.Build.0 = Release|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Debug|x64.Build.0 = Debug|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Debug|x86.Build.0 = Debug|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Release|x64.ActiveCfg = Release|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Release|x64.Build.0 = Release|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Release|x86.ActiveCfg = Release|Any CPU
+		{CCF98651-AF39-473D-9891-EC714781999A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

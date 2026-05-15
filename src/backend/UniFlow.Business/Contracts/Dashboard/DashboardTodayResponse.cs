@@ -1,3 +1,5 @@
+using UniFlow.Entity.Enums;
+
 namespace UniFlow.Business.Contracts.Dashboard;
 
 public sealed class DashboardTodayResponse
@@ -12,7 +14,15 @@ public sealed class DashboardTodayResponse
 
     public int PendingTodayCount { get; set; }
 
+    public PersonalityVibe PersonalityVibe { get; set; } = PersonalityVibe.Friendly;
+
+    /// <summary>
+    /// Persona mood derived from task stats (Sarcastic, Angry, Happy, Neutral).
+    /// </summary>
     public string AiMood { get; set; } = "Neutral";
 
-    public string Message { get; set; } = string.Empty;
+    /// <summary>
+    /// Personalized daily message based on <see cref="PersonalityVibe"/> and today's stats.
+    /// </summary>
+    public string DailyMessage { get; set; } = string.Empty;
 }

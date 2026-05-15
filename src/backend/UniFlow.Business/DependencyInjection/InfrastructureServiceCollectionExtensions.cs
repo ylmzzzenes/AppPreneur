@@ -42,6 +42,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ISyllabusFileValidationService, SyllabusFileValidationService>();
         services.AddScoped<ISyllabusIngestionService, SyllabusIngestionService>();
         services.AddScoped<IChatService, ChatService>();
+        services.AddSingleton<IDailyMessageService, DailyMessageService>();
         services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
