@@ -8,4 +8,6 @@ public interface ITaskQueries
     Task<IReadOnlyList<TaskItemSummary>> ListForUserAsync(long userId, CancellationToken cancellationToken = default);
 
     Task<TaskItem?> GetOwnedAsync(long taskId, long userId, CancellationToken cancellationToken = default);
+
+    Task<TaskItem?> GetOwnedForUpdateAsync(long taskId, long userId, CancellationToken cancellationToken = default);
 }

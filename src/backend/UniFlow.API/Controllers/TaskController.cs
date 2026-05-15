@@ -35,4 +35,32 @@ public sealed class TaskController(ITaskService taskService) : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Updates the status of a task owned by the authenticated user.
+    /// </summary>
+    [HttpPatch("{id:long}/status")]
+    [ProducesResponseType(typeof(Result<TaskItemResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<TaskItemResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(Result<TaskItemResponse>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateStatus(
+        long id,
+        [FromBody] TaskStatusUpdateRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = HttpUser.GetUserId(User);
+        var result = await taskService.UpdateStatusAsync(userId, id, request, cancellationToken).ConfigureAwait(false);
+        if (!result.IsSuccess && result.Error?.Code == "TASK_NOT_FOUND")
+        {
+            return NotFound(result);
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
 }

@@ -31,6 +31,7 @@ public sealed class TaskQueries : ITaskQueries
                 DueDate = t.DueDate,
                 Category = t.Category,
                 PriorityScore = t.PriorityScore,
+                Status = t.Status,
                 CourseId = t.Syllabus.CourseId,
                 CourseCode = t.Syllabus.Course.Code,
                 CourseTitle = t.Syllabus.Course.Title,
@@ -44,6 +45,16 @@ public sealed class TaskQueries : ITaskQueries
     {
         return _dbContext.TaskItems
             .AsNoTracking()
+            .Include(t => t.Syllabus)
+            .ThenInclude(s => s.Course)
+            .FirstOrDefaultAsync(
+                t => t.Id == taskId && t.Syllabus.Course.UserId == userId,
+                cancellationToken);
+    }
+
+    public Task<TaskItem?> GetOwnedForUpdateAsync(long taskId, long userId, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.TaskItems
             .Include(t => t.Syllabus)
             .ThenInclude(s => s.Course)
             .FirstOrDefaultAsync(

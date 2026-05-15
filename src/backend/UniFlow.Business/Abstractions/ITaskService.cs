@@ -8,4 +8,10 @@ public interface ITaskService
     Task<Result<IReadOnlyList<TaskItemResponse>>> GetMyTasksAsync(long userId, CancellationToken cancellationToken = default);
 
     Task<Result<TaskItemResponse>> GetMyTaskAsync(long userId, long taskId, CancellationToken cancellationToken = default);
+
+    Task<Result<TaskItemResponse>> UpdateStatusAsync(
+        long userId,
+        long taskId,
+        TaskStatusUpdateRequest request,
+        CancellationToken cancellationToken = default);
 }

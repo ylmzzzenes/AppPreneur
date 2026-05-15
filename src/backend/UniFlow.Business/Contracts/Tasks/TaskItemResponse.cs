@@ -1,3 +1,5 @@
+using UniFlow.Entity.Enums;
+
 namespace UniFlow.Business.Contracts.Tasks;
 
 public sealed class TaskItemResponse
@@ -13,6 +15,8 @@ public sealed class TaskItemResponse
     public string? Category { get; set; }
 
     public int? PriorityScore { get; set; }
+
+    public TaskItemStatus Status { get; set; }
 
     public long CourseId { get; set; }
 

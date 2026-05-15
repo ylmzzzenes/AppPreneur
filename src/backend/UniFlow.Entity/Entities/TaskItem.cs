@@ -1,4 +1,5 @@
 using UniFlow.Entity.Common;
+using UniFlow.Entity.Enums;
 
 namespace UniFlow.Entity.Entities;
 
@@ -23,4 +24,6 @@ public sealed class TaskItem : BaseEntity
     /// Adaptive scheduling score (1–100), populated by business logic when available.
     /// </summary>
     public int? PriorityScore { get; set; }
+
+    public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
 }

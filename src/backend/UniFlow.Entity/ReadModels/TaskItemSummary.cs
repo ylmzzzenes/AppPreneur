@@ -1,3 +1,5 @@
+using UniFlow.Entity.Enums;
+
 namespace UniFlow.Entity.ReadModels;
 
 public sealed class TaskItemSummary
@@ -13,6 +15,8 @@ public sealed class TaskItemSummary
     public string? Category { get; set; }
 
     public int? PriorityScore { get; set; }
+
+    public TaskItemStatus Status { get; set; }
 
     public long CourseId { get; set; }
 
