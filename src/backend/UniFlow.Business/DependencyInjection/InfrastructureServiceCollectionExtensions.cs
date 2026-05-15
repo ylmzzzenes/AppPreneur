@@ -33,12 +33,14 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IUserQueries, UserQueries>();
         services.AddScoped<ICourseQueries, CourseQueries>();
         services.AddScoped<ITaskQueries, TaskQueries>();
+        services.AddScoped<IDashboardQueries, DashboardQueries>();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddSingleton<IJwtTokenIssuer, JwtTokenIssuer>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ISyllabusIngestionService, SyllabusIngestionService>();
         services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }

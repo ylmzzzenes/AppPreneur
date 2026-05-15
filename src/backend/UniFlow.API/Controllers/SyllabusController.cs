@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UniFlow.API.Contracts;
 using UniFlow.API.Infrastructure;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Contracts.Syllabus;
@@ -16,27 +17,25 @@ public sealed class SyllabusController(ISyllabusIngestionService ingestionServic
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(Result<SyllabusIngestionResult>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Ingest(
-        [FromForm] string courseCode,
-        [FromForm] string courseTitle,
-        [FromForm] IFormFile file,
+        [FromForm] SyllabusIngestFormRequest form,
         CancellationToken cancellationToken)
     {
-        if (file is null || file.Length == 0)
+        if (form.File is null || form.File.Length == 0)
         {
             return BadRequest(Result<SyllabusIngestionResult>.Fail("SYLLABUS_FILE", "File is required."));
         }
 
         await using var ms = new MemoryStream();
-        await file.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+        await form.File.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
         var bytes = ms.ToArray();
 
         var userId = HttpUser.GetUserId(User);
         var result = await ingestionService.IngestAsync(
                 userId,
-                courseCode,
-                courseTitle,
+                form.CourseCode,
+                form.CourseTitle,
                 bytes,
-                file.ContentType,
+                form.File.ContentType,
                 cancellationToken)
             .ConfigureAwait(false);
 

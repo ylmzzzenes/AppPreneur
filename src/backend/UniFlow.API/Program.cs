@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddUniFlowInfrastructure(builder.Configuration);
 builder.Services.AddUniFlowAi(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -59,6 +64,7 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+    options.OperationFilter<MultipartFormDataOperationFilter>();
 });
 
 var app = builder.Build();
@@ -66,18 +72,34 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "UniFlow API v1");
+    });
 }
 
 app.UseExceptionHandler();
-app.UseHttpsRedirection();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () => Results.Ok(new { name = "UniFlow.API", status = "running" }))
-    .WithName("Root")
-    .WithOpenApi();
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/", () => Results.Redirect("/swagger"))
+        .ExcludeFromDescription();
+}
+else
+{
+    app.MapGet("/", () => Results.Ok(new { name = "UniFlow.API", status = "running" }))
+        .WithName("Root")
+        .WithOpenApi();
+}
 
 app.Run();

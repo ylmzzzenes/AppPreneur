@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
@@ -42,7 +43,9 @@ public static class AiServiceCollectionExtensions
             })
             .AddPolicyHandler(retryPolicy);
 
-        services.AddScoped<ISyllabusParsingService, SyllabusParsingService>();
+        services.AddScoped<SyllabusParsingService>();
+        services.AddScoped<HeuristicSyllabusParsingService>();
+        services.AddScoped<ISyllabusParsingService, SyllabusParsingServiceResolver>();
         services.AddSingleton<ITaskPriorityCalculator, AdaptiveTaskPriorityCalculator>();
 
         return services;
