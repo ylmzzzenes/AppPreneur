@@ -18,6 +18,8 @@ public sealed class UniFlowDbContext : DbContext
 
     public DbSet<TaskItem> TaskItems => Set<TaskItem>();
 
+    public DbSet<SyllabusScanSession> SyllabusScanSessions => Set<SyllabusScanSession>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UniFlowDbContext).Assembly);

@@ -33,6 +33,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ICourseQueries, CourseQueries>();
         services.AddScoped<ITaskQueries, TaskQueries>();
         services.AddScoped<IDashboardQueries, DashboardQueries>();
+        services.AddScoped<ISyllabusScanSessionQueries, SyllabusScanSessionQueries>();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
