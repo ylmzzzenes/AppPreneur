@@ -1,8 +1,10 @@
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Contracts.Auth;
+using UniFlow.Business.Helpers;
 using UniFlow.DataAccess.Queries;
 using UniFlow.DataAccess.UnitOfWork;
 using UniFlow.Entity.Entities;
+using UniFlow.Entity.Enums;
 using UniFlow.Entity.Results;
 
 namespace UniFlow.Business.Services;
@@ -25,6 +27,8 @@ public sealed class AuthService(
             Email = email,
             DisplayName = request.DisplayName.Trim(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12),
+            PersonalityVibe = request.PersonalityVibe ?? PersonalityVibe.Friendly,
+            Major = UserProfileNormalizer.NormalizeMajor(request.Major),
         };
 
         unitOfWork.Repository<User>().Add(user);

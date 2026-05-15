@@ -10,9 +10,14 @@ namespace UniFlow.API.Controllers;
 [Route("api/v1/[controller]")]
 public sealed class AuthController(IAuthService authService) : ControllerBase
 {
+    /// <summary>
+    /// Registers a new user. Optional <c>personalityVibe</c> defaults to Friendly; optional <c>major</c> may be omitted.
+    /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(Result<AuthResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<AuthResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Result<AuthResponse>), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
         var result = await authService.RegisterAsync(request, cancellationToken).ConfigureAwait(false);
