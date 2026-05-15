@@ -10,6 +10,7 @@ using SyllabusEntity = UniFlow.Entity.Entities.Syllabus;
 namespace UniFlow.Business.Services;
 
 public sealed class SyllabusIngestionService(
+    ISyllabusFileValidationService fileValidationService,
     ICourseQueries courseQueries,
     IUnitOfWork unitOfWork,
     IOcrService ocrService,
@@ -20,14 +21,19 @@ public sealed class SyllabusIngestionService(
         long userId,
         string courseCode,
         string courseTitle,
-        byte[] fileBytes,
-        string? contentType,
+        SyllabusUploadInput? upload,
         CancellationToken cancellationToken = default)
     {
-        if (fileBytes.Length == 0)
+        var fileResult = await fileValidationService.ValidateAndReadAsync(upload, cancellationToken)
+            .ConfigureAwait(false);
+        if (!fileResult.IsSuccess || fileResult.Data is null)
         {
-            return Result<SyllabusIngestionResult>.Fail("SYLLABUS_FILE_EMPTY", "Uploaded file is empty.");
+            return Result<SyllabusIngestionResult>.Fail(
+                fileResult.Error?.Code ?? "SYLLABUS_FILE_REQUIRED",
+                fileResult.Error?.Message ?? "Syllabus file validation failed.");
         }
+
+        var validatedFile = fileResult.Data;
 
         var code = courseCode.Trim();
         var title = courseTitle.Trim();
@@ -36,7 +42,9 @@ public sealed class SyllabusIngestionService(
             return Result<SyllabusIngestionResult>.Fail("SYLLABUS_METADATA", "Course code and title are required.");
         }
 
-        var ocrResult = await ocrService.ExtractTextAsync(fileBytes, contentType, cancellationToken).ConfigureAwait(false);
+        var ocrResult = await ocrService
+            .ExtractTextAsync(validatedFile.Content, validatedFile.ContentType, cancellationToken)
+            .ConfigureAwait(false);
         if (!ocrResult.IsSuccess || ocrResult.Data is null)
         {
             return Result<SyllabusIngestionResult>.Fail(

@@ -31,18 +31,13 @@ public static class OptionsConfigurationExtensions
         return services;
     }
 
-    public static void ValidateProductionSecrets(WebApplication app)
+    public static void ValidateStartupSecrets(WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
-        {
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString("DefaultConnection")))
         {
             throw new InvalidOperationException(
                 "ConnectionStrings:DefaultConnection is not configured. " +
-                "Set ConnectionStrings__DefaultConnection for this environment.");
+                "Set ConnectionStrings__DefaultConnection or use user-secrets.");
         }
     }
 

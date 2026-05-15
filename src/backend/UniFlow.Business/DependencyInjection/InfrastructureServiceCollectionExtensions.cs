@@ -37,6 +37,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddSingleton<IJwtTokenIssuer, JwtTokenIssuer>();
         services.AddScoped<ITaskService, TaskService>();
+        services.AddScoped<ISyllabusFileValidationService, SyllabusFileValidationService>();
         services.AddScoped<ISyllabusIngestionService, SyllabusIngestionService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<IDashboardService, DashboardService>();

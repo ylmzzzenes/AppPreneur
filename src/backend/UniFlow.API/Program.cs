@@ -2,19 +2,29 @@ using System.Text;
 using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UniFlow.API.Configuration;
 using UniFlow.API.Infrastructure;
 using UniFlow.Business.Configuration;
+using UniFlow.Business.Contracts.Syllabus;
 using UniFlow.Business.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+builder.Logging.AddFilter("System.Net.Http.HttpClient.IGeminiService", LogLevel.Warning);
+
 builder.Services.AddUniFlowValidatedOptions(builder.Configuration);
 builder.Services.AddUniFlowInfrastructure(builder.Configuration);
 builder.Services.AddUniFlowAi(builder.Configuration);
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = SyllabusUploadConstants.MaxFileSizeBytes;
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -74,7 +84,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-OptionsConfigurationExtensions.ValidateProductionSecrets(app);
+OptionsConfigurationExtensions.ValidateStartupSecrets(app);
 
 // Resolve validated JWT options so signing key is loaded (including user-secrets / env overrides).
 _ = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;

@@ -9,7 +9,6 @@ public interface ISyllabusIngestionService
         long userId,
         string courseCode,
         string courseTitle,
-        byte[] fileBytes,
-        string? contentType,
+        SyllabusUploadInput? upload,
         CancellationToken cancellationToken = default);
 }

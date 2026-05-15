@@ -46,7 +46,7 @@ internal sealed class MultipartFormDataOperationFilter : IOperationFilter
                 {
                     Type = "string",
                     Format = "binary",
-                    Description = "Syllabus document (image or text file).",
+                    Description = "Syllabus document (PDF, JPEG, or PNG; max 10 MB).",
                 };
                 required.Add(name);
                 continue;

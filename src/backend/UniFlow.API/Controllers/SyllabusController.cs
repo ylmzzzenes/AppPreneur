@@ -15,35 +15,49 @@ public sealed class SyllabusController(ISyllabusIngestionService ingestionServic
 {
     [HttpPost("ingest")]
     [Consumes("multipart/form-data")]
+    [RequestSizeLimit(SyllabusUploadConstants.MaxFileSizeBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = SyllabusUploadConstants.MaxFileSizeBytes)]
     [ProducesResponseType(typeof(Result<SyllabusIngestionResult>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Ingest(
         [FromForm] SyllabusIngestFormRequest form,
         CancellationToken cancellationToken)
     {
-        if (form.File is null || form.File.Length == 0)
+        Stream? fileStream = null;
+        SyllabusUploadInput? upload = null;
+
+        if (form.File is not null)
         {
-            return BadRequest(Result<SyllabusIngestionResult>.Fail("SYLLABUS_FILE", "File is required."));
+            fileStream = form.File.OpenReadStream();
+            upload = new SyllabusUploadInput
+            {
+                Content = fileStream,
+                FileName = form.File.FileName,
+                ContentType = form.File.ContentType,
+                DeclaredLength = form.File.Length,
+            };
         }
 
-        await using var ms = new MemoryStream();
-        await form.File.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-        var bytes = ms.ToArray();
-
-        var userId = HttpUser.GetUserId(User);
-        var result = await ingestionService.IngestAsync(
-                userId,
-                form.CourseCode,
-                form.CourseTitle,
-                bytes,
-                form.File.ContentType,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!result.IsSuccess)
+        try
         {
-            return BadRequest(result);
-        }
+            var userId = HttpUser.GetUserId(User);
+            var result = await ingestionService.IngestAsync(
+                    userId,
+                    form.CourseCode,
+                    form.CourseTitle,
+                    upload,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
-        return Ok(result);
+            return result.IsSuccess
+                ? Ok(result)
+                : BadRequest(result);
+        }
+        finally
+        {
+            if (fileStream is not null)
+            {
+                await fileStream.DisposeAsync().ConfigureAwait(false);
+            }
+        }
     }
 }

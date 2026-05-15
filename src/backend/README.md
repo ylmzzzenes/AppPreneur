@@ -11,7 +11,7 @@ dotnet run --project UniFlow.API
 
 Swagger: `http://localhost:5087/swagger` (Development only).
 
-`appsettings.Development.json` includes a LocalDB connection string and a **local-only** JWT key. Override secrets with user-secrets when needed.
+`appsettings.Development.json` includes only the LocalDB connection string. **Jwt:Key must be set via user-secrets** before the app will start.
 
 ## Secrets (never commit)
 
@@ -47,7 +47,7 @@ export ConnectionStrings__DefaultConnection="Server=...;Database=UniFlowDb;..."
 
 ## Validation behavior
 
-- **Development:** Gemini API key is optional (heuristic syllabus parsing is used when absent). JWT key can come from `appsettings.Development.json`, user-secrets, or `JWT_KEY`.
+- **Development:** `Jwt:Key` is required (user-secrets or `JWT_KEY`). Gemini API key is optional (heuristic syllabus parsing is used when absent).
 - **Production:** App fails at startup if `Jwt:Key`, `ConnectionStrings:DefaultConnection`, or (when using Azure OCR) OCR credentials are missing. Gemini API key is required outside Development.
 
 Gemini HTTP calls send the API key in the `x-goog-api-key` header (not the query string).
