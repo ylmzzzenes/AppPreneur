@@ -1,5 +1,6 @@
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Dtos;
+using UniFlow.Entity.Enums;
 
 namespace UniFlow.Business.Scheduling;
 
@@ -10,6 +11,11 @@ public sealed class AdaptiveTaskPriorityCalculator : ITaskPriorityCalculator
 {
     public int CalculateScore(TaskSchedulingInput input)
     {
+        if (input.Status == TaskItemStatus.Done)
+        {
+            return 1;
+        }
+
         var difficulty = Math.Clamp(input.Difficulty, 1, 5);
         var referenceDay = input.ReferenceUtc.Date;
 
