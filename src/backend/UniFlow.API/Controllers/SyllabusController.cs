@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using UniFlow.API.Configuration;
 using UniFlow.API.Contracts;
 using UniFlow.API.Infrastructure;
 using UniFlow.Business.Abstractions;
@@ -14,10 +16,12 @@ namespace UniFlow.API.Controllers;
 public sealed class SyllabusController(ISyllabusIngestionService ingestionService) : ControllerBase
 {
     [HttpPost("ingest")]
+    [EnableRateLimiting(RateLimitPolicies.Upload)]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(SyllabusUploadConstants.MaxFileSizeBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = SyllabusUploadConstants.MaxFileSizeBytes)]
     [ProducesResponseType(typeof(Result<SyllabusIngestionResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RateLimitResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Ingest(
         [FromForm] SyllabusIngestFormRequest form,
         CancellationToken cancellationToken)
