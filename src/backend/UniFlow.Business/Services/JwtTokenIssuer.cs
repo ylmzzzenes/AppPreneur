@@ -15,12 +15,7 @@ public sealed class JwtTokenIssuer(IOptions<JwtOptions> options) : IJwtTokenIssu
 
     public (string Token, DateTime ExpiresAtUtc) CreateAccessToken(User user)
     {
-        if (string.IsNullOrWhiteSpace(_options.Key) || _options.Key.Length < 32)
-        {
-            throw new InvalidOperationException("Jwt:Key must be configured with at least 32 characters.");
-        }
-
-        var expires = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes <= 0 ? 60 : _options.AccessTokenMinutes);
+        var expires = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

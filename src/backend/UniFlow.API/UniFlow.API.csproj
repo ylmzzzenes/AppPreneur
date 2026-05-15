@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>uniflow-api-7f3a9c2e-4b1d-4e8a-9f6c-2d5e8a1b4c7f</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

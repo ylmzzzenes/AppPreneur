@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Configuration;
@@ -13,11 +14,16 @@ public sealed class GeminiService : IGeminiService
 
     private readonly HttpClient _httpClient;
     private readonly UniFlowGeminiOptions _options;
+    private readonly ILogger<GeminiService> _logger;
 
-    public GeminiService(HttpClient httpClient, IOptions<UniFlowGeminiOptions> options)
+    public GeminiService(
+        HttpClient httpClient,
+        IOptions<UniFlowGeminiOptions> options,
+        ILogger<GeminiService> logger)
     {
         _httpClient = httpClient;
         _options = options.Value;
+        _logger = logger;
     }
 
     public async Task<Result<string>> GenerateTextAsync(string prompt, CancellationToken cancellationToken = default)
@@ -34,7 +40,7 @@ public sealed class GeminiService : IGeminiService
 
         var model = string.IsNullOrWhiteSpace(_options.Model) ? "gemini-2.0-flash" : _options.Model.Trim();
         var url =
-            $"https://generativelanguage.googleapis.com/v1beta/models/{Uri.EscapeDataString(model)}:generateContent?key={Uri.EscapeDataString(_options.ApiKey)}";
+            $"https://generativelanguage.googleapis.com/v1beta/models/{Uri.EscapeDataString(model)}:generateContent";
 
         var body = new
         {
@@ -48,13 +54,23 @@ public sealed class GeminiService : IGeminiService
             },
         };
 
-        using var response = await _httpClient.PostAsJsonAsync(url, body, SerializerOptions, cancellationToken);
-        var raw = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.TryAddWithoutValidation("x-goog-api-key", _options.ApiKey);
+        request.Content = JsonContent.Create(body, options: SerializerOptions);
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
-            return Result<string>.Fail("GEMINI_HTTP", $"Gemini request failed ({(int)response.StatusCode}): {raw}");
+            _logger.LogWarning(
+                "Gemini request failed with status {StatusCode}",
+                (int)response.StatusCode);
+            return Result<string>.Fail(
+                "GEMINI_HTTP",
+                $"Gemini request failed with status {(int)response.StatusCode}.");
         }
+
+        var raw = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -72,7 +88,8 @@ public sealed class GeminiService : IGeminiService
         }
         catch (Exception ex)
         {
-            return Result<string>.Fail("GEMINI_PARSE", $"Could not parse Gemini response: {ex.Message}. Body: {raw}");
+            _logger.LogWarning(ex, "Gemini response parse failed.");
+            return Result<string>.Fail("GEMINI_PARSE", "Could not parse Gemini response.");
         }
     }
 }

@@ -2,14 +2,17 @@ using System.Text;
 using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using UniFlow.API.Configuration;
 using UniFlow.API.Infrastructure;
 using UniFlow.Business.Configuration;
 using UniFlow.Business.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddUniFlowValidatedOptions(builder.Configuration);
 builder.Services.AddUniFlowInfrastructure(builder.Configuration);
 builder.Services.AddUniFlowAi(builder.Configuration);
 
@@ -21,11 +24,13 @@ builder.Services.AddControllers()
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((bearerOptions, jwtOptions) =>
     {
-        var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
-            ?? throw new InvalidOperationException("Jwt configuration section is missing.");
-        options.TokenValidationParameters = new TokenValidationParameters
+        var jwt = jwtOptions.Value;
+        bearerOptions.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -68,6 +73,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+OptionsConfigurationExtensions.ValidateProductionSecrets(app);
+
+// Resolve validated JWT options so signing key is loaded (including user-secrets / env overrides).
+_ = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
 
 if (app.Environment.IsDevelopment())
 {

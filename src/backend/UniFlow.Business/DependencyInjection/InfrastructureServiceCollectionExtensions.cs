@@ -17,7 +17,6 @@ public static class InfrastructureServiceCollectionExtensions
 {
     public static IServiceCollection AddUniFlowInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
         services.AddScoped<AuditInterceptor>();

@@ -17,9 +17,6 @@ public static class AiServiceCollectionExtensions
 {
     public static IServiceCollection AddUniFlowAi(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<UniFlowOcrOptions>(configuration.GetSection(UniFlowOcrOptions.SectionName));
-        services.Configure<UniFlowGeminiOptions>(configuration.GetSection(UniFlowGeminiOptions.SectionName));
-
         services.AddKeyedTransient<IOcrService, StubOcrService>(OcrProvider.Stub);
         services.AddKeyedTransient<IOcrService, AzureDocumentIntelligenceOcrService>(OcrProvider.Azure);
         services.AddKeyedTransient<IOcrService, TesseractOcrService>(OcrProvider.Tesseract);
@@ -37,9 +34,10 @@ public static class AiServiceCollectionExtensions
             .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
 
         services
-            .AddHttpClient<IGeminiService, GeminiService>(client =>
+            .AddHttpClient<IGeminiService, GeminiService>((sp, client) =>
             {
-                client.Timeout = TimeSpan.FromMinutes(2);
+                var gemini = sp.GetRequiredService<IOptions<UniFlowGeminiOptions>>().Value;
+                client.Timeout = TimeSpan.FromSeconds(gemini.TimeoutSeconds);
             })
             .AddPolicyHandler(retryPolicy);
 

@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Configuration;
 using UniFlow.Business.Dtos;
@@ -11,7 +11,7 @@ namespace UniFlow.Business.Syllabus;
 /// Uses Gemini parsing when configured; otherwise heuristic parsing in Development.
 /// </summary>
 public sealed class SyllabusParsingServiceResolver(
-    IConfiguration configuration,
+    IOptions<UniFlowGeminiOptions> geminiOptions,
     IHostEnvironment hostEnvironment,
     SyllabusParsingService geminiParsing,
     HeuristicSyllabusParsingService heuristicParsing) : ISyllabusParsingService
@@ -25,11 +25,7 @@ public sealed class SyllabusParsingServiceResolver(
 
     private ISyllabusParsingService Resolve()
     {
-        var apiKey = configuration[$"{UniFlowGeminiOptions.SectionName}:ApiKey"]
-            ?? configuration["GEMINI_API_KEY"]
-            ?? string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(apiKey))
+        if (!string.IsNullOrWhiteSpace(geminiOptions.Value.ApiKey))
         {
             return geminiParsing;
         }
