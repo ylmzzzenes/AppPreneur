@@ -90,7 +90,7 @@ OptionsConfigurationExtensions.ValidateStartupSecrets(app);
 // Resolve validated JWT options so signing key is loaded (including user-secrets / env overrides).
 _ = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
@@ -125,3 +125,5 @@ else
 }
 
 app.Run();
+
+public partial class Program;

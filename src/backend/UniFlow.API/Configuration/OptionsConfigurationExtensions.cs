@@ -33,6 +33,11 @@ public static class OptionsConfigurationExtensions
 
     public static void ValidateStartupSecrets(WebApplication app)
     {
+        if (app.Environment.IsEnvironment("Testing"))
+        {
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString("DefaultConnection")))
         {
             throw new InvalidOperationException(

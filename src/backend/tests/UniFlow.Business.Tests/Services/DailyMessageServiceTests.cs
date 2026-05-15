@@ -1,3 +1,4 @@
+using FluentAssertions;
 using UniFlow.Business.Contracts.Dashboard;
 using UniFlow.Business.Services;
 using UniFlow.Entity.Enums;
@@ -34,8 +35,8 @@ public sealed class DailyMessageServiceTests
             BigThreeTasks = bigThree,
         });
 
-        Assert.NotEqual(friendly, strict);
-        Assert.Contains("gecik", strict, StringComparison.OrdinalIgnoreCase);
+        friendly.Should().NotBe(strict);
+        strict.Should().ContainEquivalentOf("gecik");
     }
 
     [Fact]
@@ -52,12 +53,11 @@ public sealed class DailyMessageServiceTests
             BigThreeTasks = [],
         });
 
-        Assert.Contains("5", message, StringComparison.Ordinal);
-        Assert.True(
-            message.Contains("tamam", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("iş", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("Muhteşem", StringComparison.OrdinalIgnoreCase),
-            $"Expected productive tone, got: {message}");
+        message.Should().Contain("5");
+        message.Should().Match(m =>
+            m.Contains("tamam", StringComparison.OrdinalIgnoreCase)
+            || m.Contains("iş", StringComparison.OrdinalIgnoreCase)
+            || m.Contains("Muhteşem", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -74,43 +74,30 @@ public sealed class DailyMessageServiceTests
             BigThreeTasks = [new DashboardTaskItemDto { Title = "Lab Report" }],
         };
 
-        var first = _sut.BuildDailyMessage(context);
-        var second = _sut.BuildDailyMessage(context);
-
-        Assert.Equal(first, second);
+        _sut.BuildDailyMessage(context).Should().Be(_sut.BuildDailyMessage(context));
     }
 
     [Fact]
     public void BuildDailyMessage_PersonalityVibe_ChangesMessageForSameStats()
     {
-        var context = new DailyMessageContext
-        {
-            UserId = 12,
-            Today = Today,
-            OverdueTasksCount = 0,
-            CompletedTodayCount = 0,
-            PendingTodayCount = 0,
-            BigThreeTasks = [new DashboardTaskItemDto { Title = "Reading" }],
-        };
+        var bigThree = new[] { new DashboardTaskItemDto { Title = "Reading" } };
 
         var calm = _sut.BuildDailyMessage(new DailyMessageContext
         {
-            UserId = context.UserId,
-            Today = context.Today,
+            UserId = 12,
+            Today = Today,
             PersonalityVibe = PersonalityVibe.Calm,
-            OverdueTasksCount = context.OverdueTasksCount,
-            BigThreeTasks = context.BigThreeTasks,
+            BigThreeTasks = bigThree,
         });
 
         var sarcastic = _sut.BuildDailyMessage(new DailyMessageContext
         {
-            UserId = context.UserId,
-            Today = context.Today,
+            UserId = 12,
+            Today = Today,
             PersonalityVibe = PersonalityVibe.Sarcastic,
-            OverdueTasksCount = context.OverdueTasksCount,
-            BigThreeTasks = context.BigThreeTasks,
+            BigThreeTasks = bigThree,
         });
 
-        Assert.NotEqual(calm, sarcastic);
+        calm.Should().NotBe(sarcastic);
     }
 }

@@ -17,7 +17,9 @@ public sealed class UniFlowGeminiOptionsValidator(IHostEnvironment hostEnvironme
             return ValidateOptionsResult.Fail("UniFlow:Gemini:TimeoutSeconds must be between 5 and 300.");
         }
 
-        if (!hostEnvironment.IsDevelopment() && string.IsNullOrWhiteSpace(options.ApiKey))
+        if (!hostEnvironment.IsDevelopment()
+            && !hostEnvironment.IsEnvironment("Testing")
+            && string.IsNullOrWhiteSpace(options.ApiKey))
         {
             return ValidateOptionsResult.Fail(
                 "UniFlow:Gemini:ApiKey is required outside Development. " +

@@ -9,7 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.12.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <PrivateAssets>all</PrivateAssets>
@@ -18,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UniFlow.Business\UniFlow.Business.csproj" />
+    <ProjectReference Include="..\..\UniFlow.Business\UniFlow.Business.csproj" />
+    <ProjectReference Include="..\..\UniFlow.Entity\UniFlow.Entity.csproj" />
+    <ProjectReference Include="..\..\UniFlow.DataAccess\UniFlow.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>
