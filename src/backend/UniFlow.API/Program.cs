@@ -11,6 +11,7 @@ using UniFlow.API.Infrastructure;
 using UniFlow.Business.Configuration;
 using UniFlow.Business.Contracts.Syllabus;
 using UniFlow.Business.DependencyInjection;
+using UniFlow.DataAccess.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +19,8 @@ builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
 builder.Logging.AddFilter("System.Net.Http.HttpClient.IGeminiService", LogLevel.Warning);
 
 builder.Services.AddUniFlowValidatedOptions(builder.Configuration);
-builder.Services.AddUniFlowInfrastructure(builder.Configuration);
-builder.Services.AddUniFlowAi(builder.Configuration);
+builder.Services.AddUniFlowDataAccess(builder.Configuration);
+builder.Services.AddUniFlowBusiness(builder.Configuration);
 
 builder.Services.Configure<FormOptions>(options =>
 {
