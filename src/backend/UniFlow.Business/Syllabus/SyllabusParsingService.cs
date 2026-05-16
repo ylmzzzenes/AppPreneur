@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Dtos;
@@ -9,12 +8,6 @@ namespace UniFlow.Business.Syllabus;
 
 public sealed class SyllabusParsingService : ISyllabusParsingService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    };
-
     private readonly IGeminiService _gemini;
     private readonly ILogger<SyllabusParsingService> _logger;
     private readonly Lazy<string> _promptTemplate;
@@ -44,34 +37,26 @@ public sealed class SyllabusParsingService : ISyllabusParsingService
                 generated.Error?.Message ?? "Gemini generation failed.");
         }
 
-        var json = StripCodeFences(generated.Data);
-        try
+        var extractResult = AiJsonExtractor.ExtractJson(generated.Data);
+        if (!extractResult.IsSuccess || extractResult.Data is null)
         {
-            var rows = JsonSerializer.Deserialize<List<SyllabusTaskDraftDto>>(json, JsonOptions);
-            if (rows is null || rows.Count == 0)
+            return Result<IReadOnlyList<SyllabusTaskDraft>>.Fail(
+                extractResult.Error?.Code ?? "SYLLABUS_JSON_NOT_FOUND",
+                extractResult.Error?.Message ?? "Could not extract JSON from AI response.");
+        }
+
+        var parseResult = AiJsonExtractor.ParseTaskArray(extractResult.Data);
+        if (!parseResult.IsSuccess)
+        {
+            if (parseResult.Error?.Code == "SYLLABUS_JSON")
             {
-                return Result<IReadOnlyList<SyllabusTaskDraft>>.Success(Array.Empty<SyllabusTaskDraft>());
+                _logger.LogWarning("Syllabus JSON parse failed.");
             }
 
-            var list = new List<SyllabusTaskDraft>(rows.Count);
-            foreach (var row in rows)
-            {
-                list.Add(new SyllabusTaskDraft
-                {
-                    Title = row.Title ?? string.Empty,
-                    Description = row.Description,
-                    DueDate = row.DueDate,
-                    Category = row.Category,
-                });
-            }
+            return parseResult;
+        }
 
-            return Result<IReadOnlyList<SyllabusTaskDraft>>.Success(list);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Syllabus JSON parse failed. Payload: {Payload}", json);
-            return Result<IReadOnlyList<SyllabusTaskDraft>>.Fail("SYLLABUS_JSON", $"Invalid JSON from model: {ex.Message}");
-        }
+        return parseResult;
     }
 
     private static string LoadPromptTemplate()
@@ -85,37 +70,5 @@ public sealed class SyllabusParsingService : ISyllabusParsingService
             ?? throw new InvalidOperationException($"Could not open embedded resource {name}.");
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
-    }
-
-    private static string StripCodeFences(string text)
-    {
-        var t = text.Trim();
-        if (t.StartsWith("```", StringComparison.Ordinal))
-        {
-            var firstNl = t.IndexOf('\n');
-            if (firstNl > 0)
-            {
-                t = t[(firstNl + 1)..];
-            }
-
-            var end = t.LastIndexOf("```", StringComparison.Ordinal);
-            if (end > 0)
-            {
-                t = t[..end];
-            }
-        }
-
-        return t.Trim();
-    }
-
-    private sealed class SyllabusTaskDraftDto
-    {
-        public string? Title { get; set; }
-
-        public string? Description { get; set; }
-
-        public DateTime? DueDate { get; set; }
-
-        public string? Category { get; set; }
     }
 }
