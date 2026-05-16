@@ -14,15 +14,22 @@ namespace UniFlow.API.Tests.Infrastructure;
 /// </summary>
 public sealed class UniFlowApiFactory : WebApplicationFactory<Program>
 {
-    private readonly SqliteConnection _connection = new("DataSource=UniFlowIntegrationTests;Mode=Memory;Cache=Shared");
+    private readonly SqliteConnection _connection;
 
     public UniFlowApiFactory()
     {
+        var dbName = $"UniFlowTests_{Guid.NewGuid():N}";
+        _connection = new SqliteConnection($"Data Source={dbName};Mode=Memory;Cache=Shared");
         _connection.Open();
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
     }
 
-    public HttpClient CreateAuthenticatedClient() => CreateClient();
+    public HttpClient CreateBearerClient(string accessToken)
+    {
+        var client = CreateClient();
+        AuthTestHelper.WithBearerToken(client, accessToken);
+        return client;
+    }
 
     public async Task ResetDatabaseAsync()
     {
