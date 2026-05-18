@@ -28,6 +28,10 @@ public static class OptionsConfigurationExtensions
             .PostConfigure(options => ApplyOcrSecrets(configuration, options))
             .ValidateOnStart();
 
+        services.AddOptions<SyllabusTextStorageOptions>()
+            .Bind(configuration.GetSection(SyllabusTextStorageOptions.SectionName))
+            .ValidateOnStart();
+
         return services;
     }
 

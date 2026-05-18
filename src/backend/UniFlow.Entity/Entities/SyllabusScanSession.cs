@@ -19,7 +19,7 @@ public sealed class SyllabusScanSession
     public string SourceTextHash { get; set; } = string.Empty;
 
     /// <summary>
-    /// Serialized preview payload (detected items and summary). TODO: move large payloads to blob storage.
+    /// Serialized preview payload (detected items and truncated summary). Size is capped by configuration.
     /// </summary>
     public string PreviewJson { get; set; } = string.Empty;
 

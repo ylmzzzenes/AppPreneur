@@ -20,6 +20,7 @@ public static class BusinessServiceCollectionExtensions
         services.AddSingleton<IJwtTokenIssuer, JwtTokenIssuer>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ISyllabusFileValidationService, SyllabusFileValidationService>();
+        services.AddSingleton<ISyllabusTextStoragePolicy, SyllabusTextStoragePolicy>();
         services.AddScoped<ISyllabusIngestionService, SyllabusIngestionService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddSingleton<IDailyMessageService, DailyMessageService>();

@@ -6,7 +6,7 @@ namespace UniFlow.DataAccess.Configurations;
 
 internal sealed class SyllabusScanSessionConfiguration : IEntityTypeConfiguration<SyllabusScanSession>
 {
-    private const int MaxPreviewJsonLength = 512_000;
+    public const int MaxPreviewJsonLength = 20_000;
 
     public void Configure(EntityTypeBuilder<SyllabusScanSession> builder)
     {

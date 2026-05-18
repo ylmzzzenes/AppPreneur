@@ -11,9 +11,14 @@ public sealed class Syllabus : BaseEntity
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// Raw text from OCR or uploaded document extraction.
+    /// SHA-256 hash of normalized OCR/AI source text (full text is not stored).
     /// </summary>
-    public string? SourceText { get; set; }
+    public string? SourceTextHash { get; set; }
+
+    /// <summary>
+    /// Truncated preview of extracted source text for display/audit only.
+    /// </summary>
+    public string? SourceTextPreview { get; set; }
 
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 }

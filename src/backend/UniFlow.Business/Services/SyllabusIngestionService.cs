@@ -23,6 +23,7 @@ public sealed class SyllabusIngestionService(
     IOcrService ocrService,
     ISyllabusParsingService syllabusParsingService,
     ITaskPriorityCalculator taskPriorityCalculator,
+    ISyllabusTextStoragePolicy textStorage,
     ILogger<SyllabusIngestionService> logger) : ISyllabusIngestionService
 {
     public async Task<Result<SyllabusScanResponse>> ScanAsync(
@@ -48,26 +49,28 @@ public sealed class SyllabusIngestionService(
         }
 
         var parsed = parseResult.Data;
-        var sourceSummary = SyllabusScanHelper.BuildSourceSummary(parsed.SourceText);
+        var sourcePreview = textStorage.BuildSourcePreview(parsed.SourceText);
         var detectedItems = parsed.Drafts.Select(SyllabusScanHelper.ToDetectedItem).ToList();
 
         string previewJson;
         try
         {
-            previewJson = SyllabusScanHelper.SerializePreview(new SyllabusScanPreviewPayload
-            {
-                SourceSummary = sourceSummary,
-                DetectedItems = detectedItems,
-            });
+            previewJson = textStorage.SerializePreview(sourcePreview, detectedItems);
         }
         catch (InvalidOperationException ex)
         {
-            logger.LogWarning(ex, "Syllabus scan preview payload too large for user {UserId}.", userId);
+            logger.LogWarning(
+                ex,
+                "Syllabus scan preview payload too large for user {UserId}. ItemCount={ItemCount}, PreviewLength={PreviewLength}",
+                userId,
+                detectedItems.Count,
+                sourcePreview.Length);
             return Result<SyllabusScanResponse>.Fail(
                 "SYLLABUS_PARSE_FAILED",
                 "Scan preview is too large. Reduce the number of detected items and try again.");
         }
 
+        var sourceHash = textStorage.ComputeSourceTextHash(parsed.SourceText);
         var now = DateTime.UtcNow;
         var scanId = Guid.NewGuid();
         var session = new SyllabusScanSession
@@ -76,7 +79,7 @@ public sealed class SyllabusIngestionService(
             UserId = userId,
             CourseCode = code,
             CourseTitle = title,
-            SourceTextHash = SyllabusScanHelper.ComputeSourceTextHash(parsed.SourceText),
+            SourceTextHash = sourceHash,
             PreviewJson = previewJson,
             CreatedAt = now,
             ExpiresAt = now.AddMinutes(SyllabusScanConstants.SessionExpiryMinutes),
@@ -91,7 +94,7 @@ public sealed class SyllabusIngestionService(
             CourseCode = code,
             CourseTitle = title,
             DetectedItems = detectedItems,
-            SourceSummary = sourceSummary,
+            SourceSummary = sourcePreview,
             ExpiresAt = session.ExpiresAt,
         });
     }
@@ -175,7 +178,10 @@ public sealed class SyllabusIngestionService(
             {
                 CourseId = course.Id,
                 Title = title,
-                SourceText = string.IsNullOrEmpty(preview.SourceSummary) ? null : preview.SourceSummary,
+                SourceTextHash = string.IsNullOrEmpty(session.SourceTextHash) ? null : session.SourceTextHash,
+                SourceTextPreview = string.IsNullOrEmpty(preview.SourceSummary)
+                    ? null
+                    : textStorage.BuildSourcePreview(preview.SourceSummary),
             };
 
             foreach (var draft in drafts)
@@ -282,6 +288,12 @@ public sealed class SyllabusIngestionService(
 
         var drafts = parseResult.Data.ToList();
         drafts.ApplyPriorityScores(taskPriorityCalculator);
+
+        logger.LogInformation(
+            "Syllabus parsed. OcrTextLength={OcrTextLength}, ItemCount={ItemCount}, SourceTextHash={SourceTextHash}",
+            ocrResult.Data.Length,
+            drafts.Count,
+            textStorage.ComputeSourceTextHash(ocrResult.Data));
 
         return Result<ParsedSyllabusContent>.Success(new ParsedSyllabusContent(ocrResult.Data, drafts));
     }
