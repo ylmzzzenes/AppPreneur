@@ -24,6 +24,11 @@ internal sealed class SyllabusConfiguration : IEntityTypeConfiguration<Syllabus>
         builder.Property(e => e.SourceTextPreview)
             .HasMaxLength(MaxSourceTextPreviewLength);
 
+        builder.Property(e => e.SourceText)
+            .HasMaxLength(MaxSourceTextPreviewLength);
+
+        builder.HasIndex(e => e.SourceTextHash);
+
         builder.HasMany(e => e.Tasks)
             .WithOne(e => e.Syllabus)
             .HasForeignKey(e => e.SyllabusId)

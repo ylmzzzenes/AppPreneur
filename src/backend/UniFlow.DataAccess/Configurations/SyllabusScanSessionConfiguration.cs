@@ -27,14 +27,15 @@ internal sealed class SyllabusScanSessionConfiguration : IEntityTypeConfiguratio
             .IsRequired();
 
         builder.Property(e => e.PreviewJson)
-            .HasMaxLength(MaxPreviewJsonLength)
-            .IsRequired();
+            .HasMaxLength(MaxPreviewJsonLength);
 
         builder.Property(e => e.CreatedAt)
             .IsRequired();
 
         builder.Property(e => e.ExpiresAt)
             .IsRequired();
+
+        builder.HasIndex(e => e.SourceTextHash);
 
         builder.HasIndex(e => new { e.UserId, e.ExpiresAt });
 

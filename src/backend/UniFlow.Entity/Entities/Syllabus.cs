@@ -11,7 +11,7 @@ public sealed class Syllabus : BaseEntity
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// SHA-256 hash of normalized OCR/AI source text (full text is not stored).
+    /// SHA-256 hash of source text (lowercase hex). Full text is not stored by default.
     /// </summary>
     public string? SourceTextHash { get; set; }
 
@@ -19,6 +19,12 @@ public sealed class Syllabus : BaseEntity
     /// Truncated preview of extracted source text for display/audit only.
     /// </summary>
     public string? SourceTextPreview { get; set; }
+
+    /// <summary>
+    /// Optional truncated raw source text when raw storage is enabled in application configuration.
+    /// </summary>
+    public string? SourceText { get; set; }
+    public int? SourceTextLength { get; set; }
 
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 }

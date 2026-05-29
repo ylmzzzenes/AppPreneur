@@ -14,14 +14,19 @@ public sealed class SyllabusScanSession
     public string CourseTitle { get; set; } = string.Empty;
 
     /// <summary>
-    /// SHA-256 hash of extracted source text (full text is not stored).
+    /// SHA-256 hash of extracted source text (lowercase hex). Full text is not stored.
     /// </summary>
     public string SourceTextHash { get; set; } = string.Empty;
 
     /// <summary>
+    /// Original OCR source text length in characters (metadata only).
+    /// </summary>
+    public int? SourceTextLength { get; set; }
+
+    /// <summary>
     /// Serialized preview payload (detected items and truncated summary). Size is capped by configuration.
     /// </summary>
-    public string PreviewJson { get; set; } = string.Empty;
+    public string? PreviewJson { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

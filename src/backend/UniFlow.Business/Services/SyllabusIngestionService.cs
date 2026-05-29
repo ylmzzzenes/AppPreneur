@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Contracts.Syllabus;
 using UniFlow.Business.Dtos;
 using UniFlow.Business.Helpers;
+using UniFlow.Business.Options;
 using UniFlow.Business.Scheduling;
+using UniFlow.Business.Services.SyllabusTextStorage;
 using UniFlow.DataAccess.Persistence;
 using UniFlow.DataAccess.Queries;
 using UniFlow.DataAccess.UnitOfWork;
@@ -23,7 +26,8 @@ public sealed class SyllabusIngestionService(
     IOcrService ocrService,
     ISyllabusParsingService syllabusParsingService,
     ITaskPriorityCalculator taskPriorityCalculator,
-    ISyllabusTextStoragePolicy textStorage,
+    ISyllabusTextStoragePolicy textStoragePolicy,
+    IOptions<SyllabusTextStorageOptions> textStorageOptions,
     ILogger<SyllabusIngestionService> logger) : ISyllabusIngestionService
 {
     public async Task<Result<SyllabusScanResponse>> ScanAsync(
@@ -49,28 +53,36 @@ public sealed class SyllabusIngestionService(
         }
 
         var parsed = parseResult.Data;
-        var sourcePreview = textStorage.BuildSourcePreview(parsed.SourceText);
+        var sourceTextHash = textStoragePolicy.ComputeSha256Hash(parsed.SourceText);
+        var sourceTextLength = textStoragePolicy.GetTextLength(parsed.SourceText);
+        var sourcePreview = SyllabusTextPreviewHelper.BuildPreview(
+            parsed.SourceText,
+            textStorageOptions.Value.MaxStoredSourceTextLength);
         var detectedItems = parsed.Drafts.Select(SyllabusScanHelper.ToDetectedItem).ToList();
 
-        string previewJson;
+        string builtPreviewJson = string.Empty;
         try
         {
-            previewJson = textStorage.SerializePreview(sourcePreview, detectedItems);
+            builtPreviewJson = SyllabusPreviewBuilder.BuildPreviewJson(sourcePreview, detectedItems);
+            builtPreviewJson = SyllabusPreviewBuilder.ShrinkPreviewJsonToFit(
+                builtPreviewJson,
+                textStorageOptions.Value.MaxStoredPreviewJsonLength,
+                textStorageOptions.Value.MaxStoredSourceTextLength);
         }
         catch (InvalidOperationException ex)
         {
             logger.LogWarning(
                 ex,
-                "Syllabus scan preview payload too large for user {UserId}. ItemCount={ItemCount}, PreviewLength={PreviewLength}",
+                "Syllabus scan preview payload too large for user {UserId}. ParsedItemCount={ParsedItemCount}, PreviewJsonLength={PreviewJsonLength}",
                 userId,
                 detectedItems.Count,
-                sourcePreview.Length);
+                builtPreviewJson.Length);
             return Result<SyllabusScanResponse>.Fail(
                 "SYLLABUS_PARSE_FAILED",
                 "Scan preview is too large. Reduce the number of detected items and try again.");
         }
 
-        var sourceHash = textStorage.ComputeSourceTextHash(parsed.SourceText);
+        var storedPreviewJson = textStoragePolicy.PreparePreviewJsonForStorage(builtPreviewJson);
         var now = DateTime.UtcNow;
         var scanId = Guid.NewGuid();
         var session = new SyllabusScanSession
@@ -79,14 +91,23 @@ public sealed class SyllabusIngestionService(
             UserId = userId,
             CourseCode = code,
             CourseTitle = title,
-            SourceTextHash = sourceHash,
-            PreviewJson = previewJson,
+            SourceTextHash = sourceTextHash,
+            SourceTextLength = sourceTextLength,
+            PreviewJson = storedPreviewJson,
             CreatedAt = now,
             ExpiresAt = now.AddMinutes(SyllabusScanConstants.SessionExpiryMinutes),
         };
 
         scanSessionQueries.Add(session);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        logger.LogInformation(
+            "Syllabus scan completed. SessionId={SessionId}, SourceTextHash={SourceTextHash}, SourceTextLength={SourceTextLength}, PreviewJsonLength={PreviewJsonLength}, ParsedItemCount={ParsedItemCount}",
+            scanId,
+            sourceTextHash,
+            sourceTextLength,
+            storedPreviewJson?.Length ?? 0,
+            detectedItems.Count);
 
         return Result<SyllabusScanResponse>.Success(new SyllabusScanResponse
         {
@@ -135,6 +156,13 @@ public sealed class SyllabusIngestionService(
                 "Scan session has expired. Please scan the syllabus again.");
         }
 
+        if (string.IsNullOrEmpty(session.PreviewJson))
+        {
+            return Result<SyllabusIngestionResult>.Fail(
+                "SYLLABUS_SCAN_PREVIEW_UNAVAILABLE",
+                "Scan preview is not available for this session.");
+        }
+
         var items = request.Items?.Where(i => !string.IsNullOrWhiteSpace(i.Title)).ToList() ?? [];
         if (items.Count == 0)
         {
@@ -174,14 +202,20 @@ public sealed class SyllabusIngestionService(
                 await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
 
+            var sourcePreview = string.IsNullOrEmpty(preview.SourceSummary)
+                ? null
+                : SyllabusTextPreviewHelper.BuildPreview(
+                    preview.SourceSummary,
+                    textStorageOptions.Value.MaxStoredSourceTextLength);
+
             var syllabus = new SyllabusEntity
             {
                 CourseId = course.Id,
                 Title = title,
                 SourceTextHash = string.IsNullOrEmpty(session.SourceTextHash) ? null : session.SourceTextHash,
-                SourceTextPreview = string.IsNullOrEmpty(preview.SourceSummary)
-                    ? null
-                    : textStorage.BuildSourcePreview(preview.SourceSummary),
+                SourceTextLength = session.SourceTextLength,
+                SourceTextPreview = sourcePreview,
+                SourceText = textStoragePolicy.PrepareSourceTextForStorage(preview.SourceSummary),
             };
 
             foreach (var draft in drafts)
@@ -204,6 +238,13 @@ public sealed class SyllabusIngestionService(
 
             await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+
+            logger.LogInformation(
+                "Syllabus confirm completed. SessionId={SessionId}, SyllabusId={SyllabusId}, TaskCount={TaskCount}, SourceTextHash={SourceTextHash}",
+                request.ScanId,
+                syllabus.Id,
+                drafts.Count,
+                session.SourceTextHash);
 
             return Result<SyllabusIngestionResult>.Success(new SyllabusIngestionResult
             {
@@ -289,11 +330,14 @@ public sealed class SyllabusIngestionService(
         var drafts = parseResult.Data.ToList();
         drafts.ApplyPriorityScores(taskPriorityCalculator);
 
+        var sourceTextHash = textStoragePolicy.ComputeSha256Hash(ocrResult.Data);
+        var sourceTextLength = textStoragePolicy.GetTextLength(ocrResult.Data);
+
         logger.LogInformation(
-            "Syllabus parsed. OcrTextLength={OcrTextLength}, ItemCount={ItemCount}, SourceTextHash={SourceTextHash}",
-            ocrResult.Data.Length,
-            drafts.Count,
-            textStorage.ComputeSourceTextHash(ocrResult.Data));
+            "Syllabus document parsed. SourceTextHash={SourceTextHash}, SourceTextLength={SourceTextLength}, ParsedItemCount={ParsedItemCount}",
+            sourceTextHash,
+            sourceTextLength,
+            drafts.Count);
 
         return Result<ParsedSyllabusContent>.Success(new ParsedSyllabusContent(ocrResult.Data, drafts));
     }

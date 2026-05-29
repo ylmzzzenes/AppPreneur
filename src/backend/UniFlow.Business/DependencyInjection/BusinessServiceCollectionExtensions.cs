@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Services;
+using UniFlow.Business.Services.SyllabusTextStorage;
 using UniFlow.Business.Validation;
 
 namespace UniFlow.Business.DependencyInjection;
