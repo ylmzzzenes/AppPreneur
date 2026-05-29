@@ -1,8 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using UniFlow.Business.Configuration;
-using UniFlow.Business.Contracts.Syllabus;
-using UniFlow.Business.Services;
+using UniFlow.Business.Options;
+using UniFlow.Business.Services.SyllabusTextStorage;
 using Xunit;
 
 namespace UniFlow.Business.Tests.Syllabus;
@@ -12,85 +11,100 @@ public sealed class SyllabusTextStoragePolicyTests
     private static SyllabusTextStoragePolicy CreatePolicy(
         int maxSourceLength = 4000,
         int maxPreviewJsonLength = 20_000,
-        bool storeRawSourceText = false) =>
-        new(Options.Create(new SyllabusTextStorageOptions
+        bool storeRawSourceText = false,
+        bool storeAiRawResponse = false,
+        bool storePreviewJson = true,
+        bool normalizeBeforeHashing = true) =>
+        new(Microsoft.Extensions.Options.Options.Create(new SyllabusTextStorageOptions
         {
             MaxStoredSourceTextLength = maxSourceLength,
             MaxStoredPreviewJsonLength = maxPreviewJsonLength,
             StoreRawSourceText = storeRawSourceText,
+            StoreAiRawResponse = storeAiRawResponse,
+            StorePreviewJson = storePreviewJson,
+            NormalizeBeforeHashing = normalizeBeforeHashing,
         }));
 
     [Fact]
-    public void ComputeSourceTextHash_SameInput_ProducesSameSha256Hex()
+    public void Same_input_should_generate_same_sha256_hash()
     {
         var policy = CreatePolicy();
-        const string input = "  Fall 2026 CS101 syllabus content  ";
+        const string input = "Fall 2026 CS101 syllabus content";
 
-        var first = policy.ComputeSourceTextHash(input);
-        var second = policy.ComputeSourceTextHash(input);
-
-        first.Should().Be(second);
-        first.Should().HaveLength(64);
-        first.Should().MatchRegex("^[0-9A-F]+$");
+        policy.ComputeSha256Hash(input).Should().Be(policy.ComputeSha256Hash(input));
     }
 
     [Fact]
-    public void ComputeSourceTextHash_EmptyOrNullInput_IsSafeAndDeterministic()
+    public void Different_input_should_generate_different_sha256_hash()
     {
         var policy = CreatePolicy();
 
-        policy.ComputeSourceTextHash(null).Should().Be(policy.ComputeSourceTextHash(string.Empty));
-        policy.ComputeSourceTextHash("   ").Should().Be(policy.ComputeSourceTextHash(string.Empty));
+        policy.ComputeSha256Hash("input-a").Should().NotBe(policy.ComputeSha256Hash("input-b"));
     }
 
     [Fact]
-    public void BuildSourcePreview_LongText_IsTruncatedToConfiguredLength()
+    public void Empty_input_should_generate_deterministic_hash()
     {
-        var policy = CreatePolicy(maxSourceLength: 100);
-        var longText = new string('A', 500);
+        var policy = CreatePolicy();
 
-        var preview = policy.BuildSourcePreview(longText);
-
-        preview.Should().HaveLength(100);
-        preview.Should().Be(longText[..100]);
+        policy.ComputeSha256Hash(null).Should().Be(policy.ComputeSha256Hash(string.Empty));
+        policy.ComputeSha256Hash(null).Should().HaveLength(64);
+        policy.ComputeSha256Hash(null).Should().MatchRegex("^[a-f0-9]+$");
     }
 
     [Fact]
-    public void PrepareStoredSourceText_WhenDisabled_ReturnsNull()
+    public void NormalizeBeforeHashing_line_endings_produce_same_hash()
     {
-        var policy = CreatePolicy(storeRawSourceText: false);
+        var policy = CreatePolicy(normalizeBeforeHashing: true);
 
-        policy.PrepareStoredSourceText("sensitive full syllabus body").Should().BeNull();
+        policy.ComputeSha256Hash("line1\r\nline2").Should().Be(policy.ComputeSha256Hash("line1\nline2"));
     }
 
     [Fact]
-    public void PrepareStoredSourceText_WhenEnabled_ReturnsTruncatedText()
+    public void Long_source_text_should_be_truncated_when_raw_storage_enabled()
     {
         var policy = CreatePolicy(maxSourceLength: 50, storeRawSourceText: true);
         var longText = new string('B', 200);
 
-        var stored = policy.PrepareStoredSourceText(longText);
+        var stored = policy.PrepareSourceTextForStorage(longText);
 
         stored.Should().HaveLength(50);
         stored.Should().Be(longText[..50]);
     }
 
     [Fact]
-    public void SerializePreview_ExceedsMaxLength_TruncatesDetectedItems()
+    public void Source_text_should_not_be_stored_when_raw_storage_disabled()
     {
-        var policy = CreatePolicy(maxPreviewJsonLength: 600);
-        var items = Enumerable.Range(0, 40)
-            .Select(i => new SyllabusDetectedItemDto
-            {
-                Title = $"Assignment {i} with a long title for payload size",
-                Description = "Weekly reading and problem set details",
-                Type = "Homework",
-            })
-            .ToList();
+        var policy = CreatePolicy(storeRawSourceText: false);
 
-        var json = policy.SerializePreview("summary", items);
+        policy.PrepareSourceTextForStorage("sensitive full syllabus body").Should().BeNull();
+    }
 
-        json.Length.Should().BeLessOrEqualTo(600);
-        json.Should().Contain("Assignment");
+    [Fact]
+    public void Preview_json_should_be_truncated()
+    {
+        var policy = CreatePolicy(maxPreviewJsonLength: 100, storePreviewJson: true);
+        var json = new string('J', 500);
+
+        var stored = policy.PreparePreviewJsonForStorage(json);
+
+        stored.Should().HaveLength(100);
+    }
+
+    [Fact]
+    public void Ai_raw_response_should_not_be_stored_by_default()
+    {
+        var policy = CreatePolicy(storeAiRawResponse: false);
+
+        policy.PrepareAiRawResponseForStorage("{\"tasks\":[]}").Should().BeNull();
+    }
+
+    [Fact]
+    public void GetTextLength_ReturnsZeroForNull()
+    {
+        var policy = CreatePolicy();
+
+        policy.GetTextLength(null).Should().Be(0);
+        policy.GetTextLength("abc").Should().Be(3);
     }
 }

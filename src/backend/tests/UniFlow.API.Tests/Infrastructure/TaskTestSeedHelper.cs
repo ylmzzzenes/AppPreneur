@@ -73,7 +73,8 @@ internal static class TaskTestSeedHelper
             CourseId = course.Id,
             Title = "Spring 2026",
             SourceTextPreview = "seeded for integration tests",
-            SourceTextHash = "SEED",
+            SourceTextHash = "seed",
+            SourceTextLength = 28,
         };
         db.Syllabi.Add(syllabus);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
