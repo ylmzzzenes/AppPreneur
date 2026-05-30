@@ -25,6 +25,16 @@
             </ShellContent.Icon>
         </ShellContent>
         <ShellContent
+            Title="Dersler"
+            ContentTemplate="{DataTemplate views:CoursesPage}"
+            Route="Courses">
+            <ShellContent.Icon>
+                <FontImageSource
+                    Glyph="&#x1F4DA;"
+                    Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent
             Title="Sohbet"
             ContentTemplate="{DataTemplate views:ChatPage}"
             Route="Chat">

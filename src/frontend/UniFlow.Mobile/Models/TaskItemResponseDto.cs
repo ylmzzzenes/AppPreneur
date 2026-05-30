@@ -22,6 +22,9 @@ public sealed class TaskItemResponseDto
     [JsonPropertyName("priorityScore")]
     public int? PriorityScore { get; set; }
 
+    [JsonPropertyName("estimatedMinutes")]
+    public int? EstimatedMinutes { get; set; }
+
     [JsonPropertyName("status")]
     public TaskItemStatus Status { get; set; }
 
@@ -39,4 +42,13 @@ public sealed class TaskItemResponseDto
 
     [JsonPropertyName("syllabusTitle")]
     public string SyllabusTitle { get; set; } = string.Empty;
+
+    [JsonPropertyName("isAiGenerated")]
+    public bool IsAiGenerated { get; set; }
+
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; }
+
+    [JsonPropertyName("updatedAt")]
+    public DateTime? UpdatedAt { get; set; }
 }

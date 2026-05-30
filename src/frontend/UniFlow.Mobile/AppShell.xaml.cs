@@ -12,6 +12,8 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(Routes.SyllabusPreview, typeof(SyllabusPreviewPage));
         Routing.RegisterRoute(Routes.Onboarding, typeof(OnboardingPage));
         Routing.RegisterRoute(Routes.Profile, typeof(ProfilePage));
+        Routing.RegisterRoute(Routes.CourseEdit, typeof(CourseEditPage));
+        Routing.RegisterRoute(Routes.TaskCreateEdit, typeof(TaskCreateEditPage));
         Loaded += OnLoaded;
     }
 

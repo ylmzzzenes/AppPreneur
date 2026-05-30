@@ -33,5 +33,42 @@ public interface IApiClient
         UpdateOnboardingRequestDto request,
         CancellationToken cancellationToken = default);
 
+    Task<ApiResultDto<List<CourseResponseDto>>> GetCoursesAsync(CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<CourseResponseDto>> GetCourseAsync(long id, CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<CourseResponseDto>> CreateCourseAsync(
+        CreateCourseRequestDto request,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<CourseResponseDto>> UpdateCourseAsync(
+        long id,
+        UpdateCourseRequestDto request,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<bool>> DeleteCourseAsync(long id, CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<List<TaskItemResponseDto>>> GetTasksAsync(CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<TaskItemResponseDto>> GetTaskAsync(long id, CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<TaskListResponseDto>> GetTodayTasksAsync(CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<List<TaskItemResponseDto>>> GetUpcomingTasksAsync(
+        int days = 7,
+        TaskItemStatus? status = null,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<TaskItemResponseDto>> CreateTaskAsync(
+        CreateTaskRequestDto request,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<TaskItemResponseDto>> UpdateTaskAsync(
+        long id,
+        UpdateTaskRequestDto request,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<bool>> DeleteTaskAsync(long id, CancellationToken cancellationToken = default);
+
     Task<ApiResultDto<string>> SendChatAsync(string message, CancellationToken cancellationToken = default);
 }

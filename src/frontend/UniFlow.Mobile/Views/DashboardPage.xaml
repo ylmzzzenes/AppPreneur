@@ -10,7 +10,7 @@
     Title="">
     <Grid>
         <Grid Padding="20,12,20,16" RowDefinitions="Auto,*">
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,14">
                 <HorizontalStackLayout Grid.Column="0" Spacing="12" VerticalOptions="Center">
                     <Border
                         HeightRequest="44"
@@ -51,6 +51,14 @@
                 </HorizontalStackLayout>
                 <Button
                     Grid.Column="1"
+                    BackgroundColor="Transparent"
+                    Command="{Binding GoToCreateTaskCommand}"
+                    FontSize="22"
+                    Text="➕"
+                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                Dark={StaticResource IndigoBrandDark}}" />
+                <Button
+                    Grid.Column="2"
                     BackgroundColor="Transparent"
                     Command="{Binding LogoutCommand}"
                     FontSize="22"

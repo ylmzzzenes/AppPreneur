@@ -129,6 +129,103 @@ public sealed class ApiClient(HttpClient http) : IApiClient
         }
     }
 
+    public Task<ApiResultDto<List<CourseResponseDto>>> GetCoursesAsync(CancellationToken cancellationToken = default) =>
+        GetAsync<List<CourseResponseDto>>("api/v1/courses", cancellationToken);
+
+    public Task<ApiResultDto<CourseResponseDto>> GetCourseAsync(long id, CancellationToken cancellationToken = default) =>
+        GetAsync<CourseResponseDto>($"api/v1/courses/{id}", cancellationToken);
+
+    public Task<ApiResultDto<CourseResponseDto>> CreateCourseAsync(
+        CreateCourseRequestDto request,
+        CancellationToken cancellationToken = default) =>
+        PostAsync<CourseResponseDto>("api/v1/courses", request, cancellationToken);
+
+    public Task<ApiResultDto<CourseResponseDto>> UpdateCourseAsync(
+        long id,
+        UpdateCourseRequestDto request,
+        CancellationToken cancellationToken = default) =>
+        PutAsync<CourseResponseDto>($"api/v1/courses/{id}", request, cancellationToken);
+
+    public Task<ApiResultDto<bool>> DeleteCourseAsync(long id, CancellationToken cancellationToken = default) =>
+        DeleteAsync<bool>($"api/v1/courses/{id}", cancellationToken);
+
+    public Task<ApiResultDto<List<TaskItemResponseDto>>> GetTasksAsync(CancellationToken cancellationToken = default) =>
+        GetAsync<List<TaskItemResponseDto>>("api/v1/Task", cancellationToken);
+
+    public Task<ApiResultDto<TaskItemResponseDto>> GetTaskAsync(long id, CancellationToken cancellationToken = default) =>
+        GetAsync<TaskItemResponseDto>($"api/v1/Task/{id}", cancellationToken);
+
+    public Task<ApiResultDto<TaskListResponseDto>> GetTodayTasksAsync(CancellationToken cancellationToken = default) =>
+        GetAsync<TaskListResponseDto>("api/v1/Task/today", cancellationToken);
+
+    public async Task<ApiResultDto<List<TaskItemResponseDto>>> GetUpcomingTasksAsync(
+        int days = 7,
+        TaskItemStatus? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        var url = $"api/v1/Task/upcoming?days={days}";
+        if (status.HasValue)
+        {
+            url += $"&status={status.Value}";
+        }
+
+        return await GetAsync<List<TaskItemResponseDto>>(url, cancellationToken).ConfigureAwait(false);
+    }
+
+    public Task<ApiResultDto<TaskItemResponseDto>> CreateTaskAsync(
+        CreateTaskRequestDto request,
+        CancellationToken cancellationToken = default) =>
+        PostAsync<TaskItemResponseDto>("api/v1/Task", request, cancellationToken);
+
+    public Task<ApiResultDto<TaskItemResponseDto>> UpdateTaskAsync(
+        long id,
+        UpdateTaskRequestDto request,
+        CancellationToken cancellationToken = default) =>
+        PutAsync<TaskItemResponseDto>($"api/v1/Task/{id}", request, cancellationToken);
+
+    public Task<ApiResultDto<bool>> DeleteTaskAsync(long id, CancellationToken cancellationToken = default) =>
+        DeleteAsync<bool>($"api/v1/Task/{id}", cancellationToken);
+
+    private async Task<ApiResultDto<T>> GetAsync<T>(string relativeUrl, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await http.GetAsync(relativeUrl, cancellationToken).ConfigureAwait(false);
+            return await ReadResultAsync<T>(response, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return FailureFromException<T>(ex);
+        }
+    }
+
+    private async Task<ApiResultDto<T>> PutAsync<T>(string relativeUrl, object body, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await http.PutAsJsonAsync(relativeUrl, body, JsonOptions, cancellationToken)
+                .ConfigureAwait(false);
+            return await ReadResultAsync<T>(response, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return FailureFromException<T>(ex);
+        }
+    }
+
+    private async Task<ApiResultDto<T>> DeleteAsync<T>(string relativeUrl, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await http.DeleteAsync(relativeUrl, cancellationToken).ConfigureAwait(false);
+            return await ReadResultAsync<T>(response, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return FailureFromException<T>(ex);
+        }
+    }
+
     private async Task<ApiResultDto<T>> PostAsync<T>(string relativeUrl, object body, CancellationToken cancellationToken)
     {
         try

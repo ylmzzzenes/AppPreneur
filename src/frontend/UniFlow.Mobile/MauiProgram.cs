@@ -36,6 +36,9 @@ public static class MauiProgram
         builder.Services.AddTransient<SyllabusViewModel>();
         builder.Services.AddTransient<OnboardingViewModel>();
         builder.Services.AddTransient<ProfileViewModel>();
+        builder.Services.AddTransient<CoursesViewModel>();
+        builder.Services.AddTransient<CourseEditViewModel>();
+        builder.Services.AddTransient<TaskCreateEditViewModel>();
         builder.Services.AddTransient<SyllabusPreviewViewModel>();
 
 #if DEBUG
