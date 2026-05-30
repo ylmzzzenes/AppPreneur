@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="UniFlow.Mobile.Views.SyllabusPreviewPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
+    x:DataType="vm:SyllabusPreviewViewModel"
+    Title="Önizleme"
+    BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
+                                      Dark={StaticResource SurfacePageDark}}">
+    <Grid RowDefinitions="*,Auto" RowSpacing="0">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="20,16,20,96" Spacing="16">
+                <Label
+                    FontFamily="OpenSansSemibold"
+                    FontSize="22"
+                    Text="Çıkarılan görevler"
+                    TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                                Dark={StaticResource White}}" />
+                <Label
+                    FontFamily="OpenSansRegular"
+                    FontSize="14"
+                    Text="{Binding CourseCode, StringFormat='Ders: {0}'}"
+                    TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                Dark={StaticResource SlateSubtitleDark}}" />
+                <Label
+                    FontFamily="OpenSansRegular"
+                    FontSize="14"
+                    Text="{Binding CourseTitle}"
+                    TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                Dark={StaticResource SlateSubtitleDark}}" />
+
+                <CollectionView ItemsSource="{Binding Items}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SyllabusPreviewItemViewModel">
+                            <Border
+                                Margin="0,0,0,10"
+                                Padding="12"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource White},
+                                                                  Dark={StaticResource FieldFillDark}}"
+                                Stroke="#E0E7FF"
+                                StrokeShape="RoundRectangle 12">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalOptions="Start" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                        <Label
+                                            FontAttributes="Bold"
+                                            Text="{Binding Title}"
+                                            TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                                                        Dark={StaticResource White}}" />
+                                        <Label
+                                            FontSize="13"
+                                            Text="{Binding Type, StringFormat='Tür: {0}'}"
+                                            TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                                        Dark={StaticResource SlateSubtitleDark}}" />
+                                        <Label
+                                            FontSize="13"
+                                            Text="{Binding DueDate, StringFormat='Son tarih: {0:d}'}"
+                                            TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                                        Dark={StaticResource SlateSubtitleDark}}" />
+                                        <Label
+                                            FontSize="13"
+                                            Text="{Binding PriorityScore, StringFormat='Öncelik: {0}'}"
+                                            TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                                                        Dark={StaticResource SlateSubtitleDark}}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label
+                    FontSize="14"
+                    Text="{Binding StatusMessage}"
+                    TextColor="#DC2626" />
+
+                <ActivityIndicator HorizontalOptions="Center" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Grid Grid.Row="1" Padding="16,12,16,20" ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Button
+                Grid.Column="0"
+                BackgroundColor="Transparent"
+                BorderColor="{StaticResource IndigoBrand}"
+                BorderWidth="1.5"
+                Command="{Binding GoBackCommand}"
+                CornerRadius="12"
+                Text="Geri"
+                TextColor="{StaticResource IndigoBrand}" />
+            <Button
+                Grid.Column="1"
+                BackgroundColor="{StaticResource IndigoBrand}"
+                Command="{Binding ConfirmCommand}"
+                CornerRadius="12"
+                Text="Onayla"
+                TextColor="White" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -239,13 +239,13 @@
                 BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
                                                   Dark={StaticResource IndigoBrandDark}}"
                 BorderWidth="0"
-                Command="{Binding UploadCommand}"
+                Command="{Binding ScanCommand}"
                 CornerRadius="15"
                 FontFamily="OpenSansSemibold"
                 FontSize="16"
                 HeightRequest="56"
                 MinimumHeightRequest="56"
-                Text="Yükle ve işle"
+                Text="Tara ve önizle"
                 TextColor="White">
                 <Button.Shadow>
                     <Shadow

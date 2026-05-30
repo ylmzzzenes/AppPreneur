@@ -6,12 +6,14 @@ using UniFlow.Mobile.Services;
 
 namespace UniFlow.Mobile.ViewModels;
 
-public partial class DashboardViewModel(IApiClient apiClient, IAuthTokenStore tokenStore, IUserSessionInfo userSession)
-    : ObservableObject
+public partial class DashboardViewModel(
+    IApiClient apiClient,
+    IAuthTokenStore tokenStore,
+    IUserSessionInfo userSession) : ObservableObject
 {
     private CancellationTokenSource? _snackCts;
 
-    public ObservableCollection<TaskItemResponseDto> Tasks { get; } = new();
+    public ObservableCollection<DashboardTaskItemDto> BigThreeTasks { get; } = new();
 
     [ObservableProperty]
     private bool isLoading;
@@ -22,11 +24,29 @@ public partial class DashboardViewModel(IApiClient apiClient, IAuthTokenStore to
     [ObservableProperty]
     private string userInitial = userSession.GetAvatarLetter();
 
+    [ObservableProperty]
+    private string dailyMessage = string.Empty;
+
+    [ObservableProperty]
+    private string aiMood = string.Empty;
+
+    [ObservableProperty]
+    private int pendingTodayCount;
+
+    [ObservableProperty]
+    private int completedTodayCount;
+
+    [ObservableProperty]
+    private int overdueTasksCount;
+
+    [ObservableProperty]
+    private bool hasDashboardData;
+
     [RelayCommand]
     private async Task LoadAsync(CancellationToken cancellationToken)
     {
         IsLoading = true;
-        Tasks.Clear();
+        BigThreeTasks.Clear();
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
@@ -43,35 +63,60 @@ public partial class DashboardViewModel(IApiClient apiClient, IAuthTokenStore to
                 return;
             }
 
-            var result = await apiClient.GetTasksAsync(cancellationToken).ConfigureAwait(false);
-            var ordered = result.Data is null
-                ? null
-                : result.Data.OrderByDescending(x => x.PriorityScore).ThenBy(x => x.DueDate).ToList();
+            var result = await apiClient.GetDashboardTodayAsync(cancellationToken).ConfigureAwait(false);
+
+            if (result.Error?.Code == "UNAUTHORIZED")
+            {
+                await HandleUnauthorizedAsync(cancellationToken).ConfigureAwait(false);
+                return;
+            }
 
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                if (!result.IsSuccess || ordered is null)
+                if (!result.IsSuccess || result.Data is null)
                 {
-                    EnqueueSnack(result.Error?.Message ?? "Görevler yüklenemedi.");
+                    EnqueueSnack(result.Error?.Message ?? "Dashboard yüklenemedi.");
+                    HasDashboardData = false;
                     return;
                 }
 
-                foreach (var t in ordered)
-                    Tasks.Add(t);
+                var data = result.Data;
+                DailyMessage = data.DailyMessage;
+                AiMood = data.AiMood;
+                PendingTodayCount = data.PendingTodayCount;
+                CompletedTodayCount = data.CompletedTodayCount;
+                OverdueTasksCount = data.OverdueTasksCount;
+                HasDashboardData = true;
+
+                foreach (var task in data.BigThreeTasks)
+                {
+                    BigThreeTasks.Add(task);
+                }
             }).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
-            // Yenileme veya sayfa kapanırken iptal — sessiz
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await MainThread.InvokeOnMainThreadAsync(() => EnqueueSnack(ex.Message)).ConfigureAwait(false);
+            await MainThread.InvokeOnMainThreadAsync(() => EnqueueSnack("Dashboard yüklenemedi.")).ConfigureAwait(false);
         }
         finally
         {
             await MainThread.InvokeOnMainThreadAsync(() => IsLoading = false).ConfigureAwait(false);
         }
+    }
+
+    [RelayCommand]
+    private async Task MarkTaskDoneAsync(DashboardTaskItemDto task, CancellationToken cancellationToken)
+    {
+        await UpdateTaskStatusAsync(task, TaskItemStatus.Done, cancellationToken).ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task MarkTaskPendingAsync(DashboardTaskItemDto task, CancellationToken cancellationToken)
+    {
+        await UpdateTaskStatusAsync(task, TaskItemStatus.Pending, cancellationToken).ConfigureAwait(false);
     }
 
     [RelayCommand]
@@ -84,6 +129,45 @@ public partial class DashboardViewModel(IApiClient apiClient, IAuthTokenStore to
         await tokenStore.ClearAsync(cancellationToken).ConfigureAwait(false);
         userSession.Clear();
         await MainThread.InvokeOnMainThreadAsync(() => UserInitial = "?").ConfigureAwait(false);
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+            await Shell.Current.GoToAsync($"//{Routes.Login}")).ConfigureAwait(false);
+    }
+
+    private async Task UpdateTaskStatusAsync(
+        DashboardTaskItemDto task,
+        TaskItemStatus newStatus,
+        CancellationToken cancellationToken)
+    {
+        var previousStatus = task.Status;
+        task.Status = newStatus;
+
+        var result = await apiClient.UpdateTaskStatusAsync(task.Id, newStatus, cancellationToken).ConfigureAwait(false);
+
+        if (result.Error?.Code == "UNAUTHORIZED")
+        {
+            task.Status = previousStatus;
+            await HandleUnauthorizedAsync(cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        if (!result.IsSuccess)
+        {
+            task.Status = previousStatus;
+            EnqueueSnack(result.Error?.Message ?? "Görev durumu güncellenemedi.");
+            return;
+        }
+
+        if (LoadCommand.CanExecute(null))
+        {
+            LoadCommand.Execute(null);
+        }
+    }
+
+    private async Task HandleUnauthorizedAsync(CancellationToken cancellationToken)
+    {
+        await tokenStore.ClearAsync(cancellationToken).ConfigureAwait(false);
+        userSession.Clear();
+        EnqueueSnack("Oturum süresi doldu. Lütfen tekrar giriş yapın.");
         await MainThread.InvokeOnMainThreadAsync(async () =>
             await Shell.Current.GoToAsync($"//{Routes.Login}")).ConfigureAwait(false);
     }

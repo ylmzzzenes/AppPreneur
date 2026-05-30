@@ -1,10 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UniFlow.Mobile.Models;
 using UniFlow.Mobile.Services;
 
 namespace UniFlow.Mobile.ViewModels;
 
-public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
+public partial class SyllabusViewModel(IApiClient apiClient, ISyllabusScanState scanState) : ObservableObject
 {
     [ObservableProperty]
     private string courseCode = string.Empty;
@@ -15,20 +16,14 @@ public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
     [ObservableProperty]
     private string? pickedFileLabel;
 
-    partial void OnPickedFileLabelChanged(string? value)
-    {
-        OnPropertyChanged(nameof(HasPickedFile));
-    }
+    partial void OnPickedFileLabelChanged(string? value) => OnPropertyChanged(nameof(HasPickedFile));
 
     public bool HasPickedFile => !string.IsNullOrWhiteSpace(PickedFileLabel);
 
     [ObservableProperty]
     private string? statusMessage;
 
-    partial void OnStatusMessageChanged(string? value)
-    {
-        OnPropertyChanged(nameof(ShowStatusBanner));
-    }
+    partial void OnStatusMessageChanged(string? value) => OnPropertyChanged(nameof(ShowStatusBanner));
 
     public bool ShowStatusBanner => !string.IsNullOrWhiteSpace(StatusMessage);
 
@@ -42,7 +37,9 @@ public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
     {
         var page = Shell.Current?.CurrentPage;
         if (page is null)
+        {
             return;
+        }
 
         var pick = await page.DisplayActionSheet(
             "Dosya ekle",
@@ -52,9 +49,13 @@ public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
             "Kamerayla çek");
 
         if (pick == "Galeriden seç")
+        {
             await PickPhotoAsync(cancellationToken).ConfigureAwait(false);
+        }
         else if (pick == "Kamerayla çek")
+        {
             await CapturePhotoAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     [RelayCommand]
@@ -76,9 +77,9 @@ public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
                 StatusMessage = null;
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await MainThread.InvokeOnMainThreadAsync(() => StatusMessage = ex.Message);
+            await MainThread.InvokeOnMainThreadAsync(() => StatusMessage = "Fotoğraf seçilemedi.");
         }
     }
 
@@ -108,14 +109,14 @@ public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
                 StatusMessage = null;
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await MainThread.InvokeOnMainThreadAsync(() => StatusMessage = ex.Message);
+            await MainThread.InvokeOnMainThreadAsync(() => StatusMessage = "Fotoğraf çekilemedi.");
         }
     }
 
     [RelayCommand]
-    private async Task UploadAsync(CancellationToken cancellationToken)
+    private async Task ScanAsync(CancellationToken cancellationToken)
     {
         if (_pickedFile is null)
         {
@@ -140,24 +141,31 @@ public partial class SyllabusViewModel(IApiClient apiClient) : ObservableObject
             }
 
             await using var stream = await _pickedFile.OpenReadAsync().ConfigureAwait(false);
-            var result = await apiClient.IngestSyllabusAsync(
+            var result = await apiClient.ScanSyllabusAsync(
                     CourseCode.Trim(),
                     CourseTitle.Trim(),
                     stream,
                     _pickedFile.FileName,
-                    null,
+                    _pickedFile.ContentType,
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            await MainThread.InvokeOnMainThreadAsync(() =>
+            await MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 if (!result.IsSuccess || result.Data is null)
                 {
-                    StatusMessage = result.Error?.Message ?? "Yükleme başarısız.";
+                    StatusMessage = result.Error?.Message ?? "Tarama başarısız.";
                     return;
                 }
 
-                StatusMessage = $"Tamam: {result.Data.TaskCount} görev çıkarıldı.";
+                if (result.Data.DetectedItems.Count == 0)
+                {
+                    StatusMessage = "Müfredatta görev bulunamadı.";
+                    return;
+                }
+
+                scanState.Current = result.Data;
+                await Shell.Current.GoToAsync(Routes.SyllabusPreview).ConfigureAwait(false);
             });
         }
         finally

@@ -8,4 +8,5 @@ internal static class Routes
     public const string Dashboard = "Dashboard";
     public const string Chat = "Chat";
     public const string Syllabus = "Syllabus";
+    public const string SyllabusPreview = "SyllabusPreview";
 }

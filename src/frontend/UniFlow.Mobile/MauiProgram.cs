@@ -19,6 +19,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<IAuthTokenStore, SecureAuthTokenStore>();
         builder.Services.AddSingleton<IUserSessionInfo, UserSessionInfo>();
+        builder.Services.AddSingleton<ISyllabusScanState, SyllabusScanState>();
         builder.Services.AddTransient<AuthHeaderHandler>();
         builder.Services
             .AddHttpClient<IApiClient, ApiClient>(client =>
@@ -33,6 +34,7 @@ public static class MauiProgram
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<ChatViewModel>();
         builder.Services.AddTransient<SyllabusViewModel>();
+        builder.Services.AddTransient<SyllabusPreviewViewModel>();
 
 #if DEBUG
         builder.Logging.AddDebug();

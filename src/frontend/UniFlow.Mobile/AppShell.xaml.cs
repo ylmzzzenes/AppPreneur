@@ -9,6 +9,7 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         Routing.RegisterRoute(Routes.Register, typeof(RegisterPage));
+        Routing.RegisterRoute(Routes.SyllabusPreview, typeof(SyllabusPreviewPage));
         Loaded += OnLoaded;
     }
 
