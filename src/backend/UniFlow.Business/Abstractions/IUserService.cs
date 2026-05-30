@@ -5,6 +5,10 @@ namespace UniFlow.Business.Abstractions;
 
 public interface IUserService
 {
+    Task<Result<UserProfileResponse>> GetProfileAsync(
+        long userId,
+        CancellationToken cancellationToken = default);
+
     Task<Result<UserProfileResponse>> UpdateOnboardingAsync(
         long userId,
         OnboardingUpdateRequest request,

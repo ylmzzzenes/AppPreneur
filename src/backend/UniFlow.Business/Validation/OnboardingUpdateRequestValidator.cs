@@ -9,8 +9,28 @@ public sealed class OnboardingUpdateRequestValidator : AbstractValidator<Onboard
     public OnboardingUpdateRequestValidator()
     {
         RuleFor(x => x)
-            .Must(x => x.PersonalityVibe.HasValue || x.Major is not null)
-            .WithMessage("At least one of personalityVibe or major must be provided.");
+            .Must(HasAtLeastOneField)
+            .WithMessage("At least one profile field must be provided.");
+
+        When(x => x.DisplayName is not null, () =>
+        {
+            RuleFor(x => x.DisplayName)
+                .NotEmpty()
+                .WithMessage("DisplayName cannot be empty.")
+                .MaximumLength(100);
+        });
+
+        When(x => x.Major is not null, () =>
+        {
+            RuleFor(x => x.Major)
+                .MaximumLength(120);
+        });
+
+        When(x => x.AcademicGoal is not null, () =>
+        {
+            RuleFor(x => x.AcademicGoal)
+                .MaximumLength(500);
+        });
 
         When(x => x.PersonalityVibe.HasValue, () =>
         {
@@ -19,8 +39,18 @@ public sealed class OnboardingUpdateRequestValidator : AbstractValidator<Onboard
                 .WithMessage("PersonalityVibe must be a valid value.");
         });
 
-        RuleFor(x => x.Major)
-            .MaximumLength(100)
-            .When(x => x.Major is not null);
+        When(x => x.DailyStudyTargetMinutes.HasValue, () =>
+        {
+            RuleFor(x => x.DailyStudyTargetMinutes)
+                .InclusiveBetween(0, 720)
+                .WithMessage("DailyStudyTargetMinutes must be between 0 and 720.");
+        });
     }
+
+    private static bool HasAtLeastOneField(OnboardingUpdateRequest request) =>
+        request.DisplayName is not null
+        || request.Major is not null
+        || request.AcademicGoal is not null
+        || request.PersonalityVibe.HasValue
+        || request.DailyStudyTargetMinutes.HasValue;
 }

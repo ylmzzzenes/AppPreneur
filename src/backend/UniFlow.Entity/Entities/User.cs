@@ -15,5 +15,11 @@ public sealed class User : BaseEntity
 
     public string? Major { get; set; }
 
+    public string? AcademicGoal { get; set; }
+
+    public int? DailyStudyTargetMinutes { get; set; }
+
+    public bool IsOnboardingCompleted { get; set; }
+
     public ICollection<Course> Courses { get; set; } = new List<Course>();
 }

@@ -32,7 +32,15 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasDefaultValue(PersonalityVibe.Friendly);
 
         builder.Property(e => e.Major)
-            .HasMaxLength(100);
+            .HasMaxLength(120);
+
+        builder.Property(e => e.AcademicGoal)
+            .HasMaxLength(500);
+
+        builder.Property(e => e.DailyStudyTargetMinutes);
+
+        builder.Property(e => e.IsOnboardingCompleted)
+            .HasDefaultValue(false);
 
         builder.HasIndex(e => e.Email)
             .IsUnique();
