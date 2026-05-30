@@ -2,16 +2,13 @@ using System.Text.Json.Serialization;
 
 namespace UniFlow.Mobile.Models;
 
-public sealed class TaskItemResponseDto
+public sealed class DashboardTaskItemDto
 {
     [JsonPropertyName("id")]
     public long Id { get; set; }
 
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
-
-    [JsonPropertyName("description")]
-    public string? Description { get; set; }
 
     [JsonPropertyName("dueDate")]
     public DateTime? DueDate { get; set; }
@@ -25,18 +22,12 @@ public sealed class TaskItemResponseDto
     [JsonPropertyName("status")]
     public TaskItemStatus Status { get; set; }
 
-    [JsonPropertyName("courseId")]
-    public long CourseId { get; set; }
-
     [JsonPropertyName("courseCode")]
     public string CourseCode { get; set; } = string.Empty;
 
     [JsonPropertyName("courseTitle")]
     public string CourseTitle { get; set; } = string.Empty;
 
-    [JsonPropertyName("syllabusId")]
-    public long SyllabusId { get; set; }
-
-    [JsonPropertyName("syllabusTitle")]
-    public string SyllabusTitle { get; set; } = string.Empty;
+    [JsonPropertyName("isOverdue")]
+    public bool IsOverdue { get; set; }
 }
