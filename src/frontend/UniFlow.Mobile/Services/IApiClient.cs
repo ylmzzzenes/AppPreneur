@@ -27,5 +27,11 @@ public interface IApiClient
         TaskItemStatus status,
         CancellationToken cancellationToken = default);
 
+    Task<ApiResultDto<UserProfileDto>> GetMyProfileAsync(CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<UserProfileDto>> UpdateOnboardingAsync(
+        UpdateOnboardingRequestDto request,
+        CancellationToken cancellationToken = default);
+
     Task<ApiResultDto<string>> SendChatAsync(string message, CancellationToken cancellationToken = default);
 }

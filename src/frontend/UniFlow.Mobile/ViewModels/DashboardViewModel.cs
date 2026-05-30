@@ -120,6 +120,10 @@ public partial class DashboardViewModel(
     }
 
     [RelayCommand]
+    private async Task GoToProfileAsync() =>
+        await Shell.Current.GoToAsync(Routes.Profile).ConfigureAwait(false);
+
+    [RelayCommand]
     private async Task GoToSyllabusAsync() =>
         await Shell.Current.GoToAsync($"//{Routes.MainTabs}/{Routes.Syllabus}").ConfigureAwait(false);
 

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="UniFlow.Mobile.Views.ProfilePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
+    x:DataType="vm:ProfileViewModel"
+    Title="Profil"
+    BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
+                                      Dark={StaticResource SurfacePageDark}}">
+    <Grid RowDefinitions="Auto,*">
+        <ActivityIndicator
+            Grid.RowSpan="2"
+            HorizontalOptions="Center"
+            IsRunning="{Binding IsLoading}"
+            IsVisible="{Binding IsLoading}"
+            VerticalOptions="Center" />
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="24,12" Spacing="16">
+                <Entry IsEnabled="False" Placeholder="E-posta" Text="{Binding Email}" />
+                <Entry Placeholder="Görünen ad" Text="{Binding DisplayName}" />
+                <Entry Placeholder="Bölüm / Major" Text="{Binding Major}" />
+                <Editor
+                    AutoSize="TextChanges"
+                    HeightRequest="90"
+                    Placeholder="Akademik hedefin"
+                    Text="{Binding AcademicGoal}" />
+                <Picker
+                    ItemDisplayBinding="{Binding Label}"
+                    ItemsSource="{Binding PersonalityOptions}"
+                    SelectedItem="{Binding SelectedPersonality}"
+                    Title="Motivasyon tarzı" />
+                <Entry
+                    Keyboard="Numeric"
+                    Placeholder="Günlük çalışma hedefi (dakika)"
+                    Text="{Binding DailyStudyTargetMinutes}" />
+
+                <Label
+                    Text="{Binding StatusMessage}"
+                    TextColor="{AppThemeBinding Light=#2E7D32,
+                                                Dark=#A5D6A7}" />
+
+                <Button Command="{Binding SaveCommand}" Text="Güncelle" />
+                <Button
+                    BackgroundColor="Transparent"
+                    Command="{Binding GoBackCommand}"
+                    Text="Geri" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

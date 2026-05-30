@@ -19,6 +19,9 @@
                                                           Dark=#40818CF8}"
                         StrokeThickness="0"
                         VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToProfileCommand}" />
+                        </Border.GestureRecognizers>
                         <Border.StrokeShape>
                             <Ellipse />
                         </Border.StrokeShape>

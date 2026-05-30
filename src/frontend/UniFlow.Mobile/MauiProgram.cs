@@ -34,6 +34,8 @@ public static class MauiProgram
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<ChatViewModel>();
         builder.Services.AddTransient<SyllabusViewModel>();
+        builder.Services.AddTransient<OnboardingViewModel>();
+        builder.Services.AddTransient<ProfileViewModel>();
         builder.Services.AddTransient<SyllabusPreviewViewModel>();
 
 #if DEBUG

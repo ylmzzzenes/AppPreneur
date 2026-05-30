@@ -81,12 +81,8 @@ public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tok
             }
 
             await tokenStore.SetTokenAsync(result.Data.AccessToken, cancellationToken).ConfigureAwait(false);
-            await MainThread.InvokeOnMainThreadAsync(() =>
-                    userSession.SetDisplayName(result.Data.DisplayName))
+            await AuthNavigation.NavigateAfterAuthenticationAsync(apiClient, tokenStore, userSession, cancellationToken)
                 .ConfigureAwait(false);
-
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-                await Shell.Current.GoToAsync($"//{Routes.MainTabs}/{Routes.Dashboard}"));
         }
         finally
         {

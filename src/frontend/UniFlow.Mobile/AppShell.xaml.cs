@@ -10,6 +10,8 @@ public partial class AppShell : Shell
         InitializeComponent();
         Routing.RegisterRoute(Routes.Register, typeof(RegisterPage));
         Routing.RegisterRoute(Routes.SyllabusPreview, typeof(SyllabusPreviewPage));
+        Routing.RegisterRoute(Routes.Onboarding, typeof(OnboardingPage));
+        Routing.RegisterRoute(Routes.Profile, typeof(ProfilePage));
         Loaded += OnLoaded;
     }
 
@@ -21,8 +23,10 @@ public partial class AppShell : Shell
             var store = ServiceHelper.GetRequiredService<IAuthTokenStore>();
             if (await store.HasTokenAsync().ConfigureAwait(false))
             {
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                    await GoToAsync($"//{Routes.MainTabs}/{Routes.Dashboard}"));
+                var apiClient = ServiceHelper.GetRequiredService<IApiClient>();
+                var userSession = ServiceHelper.GetRequiredService<IUserSessionInfo>();
+                await AuthNavigation.NavigateAfterAuthenticationAsync(apiClient, store, userSession)
+                    .ConfigureAwait(false);
             }
         }
         catch

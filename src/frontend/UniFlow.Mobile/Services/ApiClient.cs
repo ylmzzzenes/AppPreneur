@@ -95,6 +95,40 @@ public sealed class ApiClient(HttpClient http) : IApiClient
     public Task<ApiResultDto<string>> SendChatAsync(string message, CancellationToken cancellationToken = default) =>
         PostAsync<string>("api/v1/Chat", new ChatRequestDto { Message = message }, cancellationToken);
 
+    public async Task<ApiResultDto<UserProfileDto>> GetMyProfileAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var response = await http.GetAsync("api/v1/users/me", cancellationToken).ConfigureAwait(false);
+            return await ReadResultAsync<UserProfileDto>(response, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return FailureFromException<UserProfileDto>(ex);
+        }
+    }
+
+    public async Task<ApiResultDto<UserProfileDto>> UpdateOnboardingAsync(
+        UpdateOnboardingRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var response = await http.PatchAsJsonAsync(
+                    "api/v1/users/me/onboarding",
+                    request,
+                    JsonOptions,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            return await ReadResultAsync<UserProfileDto>(response, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return FailureFromException<UserProfileDto>(ex);
+        }
+    }
+
     private async Task<ApiResultDto<T>> PostAsync<T>(string relativeUrl, object body, CancellationToken cancellationToken)
     {
         try

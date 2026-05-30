@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="UniFlow.Mobile.Views.OnboardingPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
+    x:DataType="vm:OnboardingViewModel"
+    Title="Profilini tamamla"
+    BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
+                                      Dark={StaticResource SurfacePageDark}}">
+    <ScrollView>
+        <VerticalStackLayout Padding="24,20" Spacing="16">
+            <Label
+                FontFamily="OpenSansSemibold"
+                FontSize="26"
+                Text="Hoş geldin"
+                TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
+                                            Dark={StaticResource White}}" />
+            <Label
+                FontFamily="OpenSansRegular"
+                FontSize="14"
+                Text="UniFlow deneyimini kişiselleştirmek için birkaç bilgi paylaş."
+                TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
+                                            Dark={StaticResource SlateSubtitleDark}}" />
+
+            <Entry Placeholder="Görünen ad" Text="{Binding DisplayName}" />
+            <Entry Placeholder="Bölüm / Major" Text="{Binding Major}" />
+            <Editor
+                AutoSize="TextChanges"
+                HeightRequest="90"
+                Placeholder="Akademik hedefin"
+                Text="{Binding AcademicGoal}" />
+            <Picker
+                ItemDisplayBinding="{Binding Label}"
+                ItemsSource="{Binding PersonalityOptions}"
+                SelectedItem="{Binding SelectedPersonality}"
+                Title="Motivasyon tarzı" />
+            <Entry
+                Keyboard="Numeric"
+                Placeholder="Günlük çalışma hedefi (dakika)"
+                Text="{Binding DailyStudyTargetMinutes}" />
+
+            <Label
+                Text="{Binding StatusMessage}"
+                TextColor="{AppThemeBinding Light=#C62828,
+                                            Dark=#FF8A80}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+            <Button
+                Command="{Binding SaveCommand}"
+                Text="Kaydet ve devam et" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
