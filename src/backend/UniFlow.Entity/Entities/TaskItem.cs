@@ -25,5 +25,7 @@ public sealed class TaskItem : BaseEntity
     /// </summary>
     public int? PriorityScore { get; set; }
 
+    public int? EstimatedMinutes { get; set; }
+
     public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
 }

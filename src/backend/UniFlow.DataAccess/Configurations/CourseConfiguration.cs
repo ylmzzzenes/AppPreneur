@@ -21,7 +21,10 @@ internal sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             .IsRequired();
 
         builder.Property(e => e.Description)
-            .HasMaxLength(4000);
+            .HasMaxLength(500);
+
+        builder.Property(e => e.Color)
+            .HasMaxLength(30);
 
         builder.HasMany(e => e.Syllabi)
             .WithOne(e => e.Course)

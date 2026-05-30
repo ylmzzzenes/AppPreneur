@@ -16,6 +16,8 @@ public sealed class TaskItemResponse
 
     public int? PriorityScore { get; set; }
 
+    public int? EstimatedMinutes { get; set; }
+
     public TaskItemStatus Status { get; set; }
 
     public long CourseId { get; set; }
@@ -27,4 +29,10 @@ public sealed class TaskItemResponse
     public long SyllabusId { get; set; }
 
     public string SyllabusTitle { get; set; } = string.Empty;
+
+    public bool IsAiGenerated { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
 }

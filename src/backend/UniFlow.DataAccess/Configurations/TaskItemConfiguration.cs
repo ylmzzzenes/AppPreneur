@@ -28,5 +28,7 @@ internal sealed class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
             .HasMaxLength(32)
             .IsRequired()
             .HasDefaultValue(TaskItemStatus.Pending);
+
+        builder.Property(e => e.EstimatedMinutes);
     }
 }

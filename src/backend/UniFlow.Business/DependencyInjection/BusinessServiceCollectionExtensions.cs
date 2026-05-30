@@ -18,6 +18,7 @@ public static class BusinessServiceCollectionExtensions
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ICourseService, CourseService>();
         services.AddSingleton<IJwtTokenIssuer, JwtTokenIssuer>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<ISyllabusFileValidationService, SyllabusFileValidationService>();

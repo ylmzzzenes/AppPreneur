@@ -14,5 +14,7 @@ public sealed class Course : BaseEntity
 
     public string? Description { get; set; }
 
+    public string? Color { get; set; }
+
     public ICollection<Syllabus> Syllabi { get; set; } = new List<Syllabus>();
 }
