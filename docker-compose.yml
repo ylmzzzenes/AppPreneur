@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: uniflow-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-uniflow}
+      POSTGRES_USER: ${POSTGRES_USER:-uniflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-uniflow_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - uniflow_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-uniflow} -d ${POSTGRES_DB:-uniflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/UniFlow.API/Dockerfile
+    container_name: uniflow-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__Provider: ${DATABASE_PROVIDER:-PostgreSql}
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=uniflow;Username=uniflow;Password=uniflow_dev_password}
+      JWT_KEY: ${JWT_KEY:-dev-jwt-secret-for-local-docker-compose-only-32c}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    env_file:
+      - path: .env
+        required: false
+
+volumes:
+  uniflow_pgdata:
