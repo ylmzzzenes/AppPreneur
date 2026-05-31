@@ -74,7 +74,13 @@ See `appsettings.example.json` for the full template.
 | Setting | User-secrets key | Environment variable |
 |--------|------------------|----------------------|
 | JWT signing key | `Jwt:Key` | `JWT_KEY` |
-| Gemini API key | `UniFlow:Gemini:ApiKey` | `GEMINI_API_KEY` |
+| Gemini API key (legacy) | `UniFlow:Gemini:ApiKey` | `GEMINI_API_KEY` |
+| AI provider | `Ai:Provider` | `Ai__Provider` |
+| AI API key | `Ai:ApiKey` | `Ai__ApiKey` or `AI_API_KEY` |
+| OpenAI-compatible base URL | `Ai:BaseUrl` | `Ai__BaseUrl` |
+| AI model | `Ai:Model` | `Ai__Model` |
+| AI timeout / retry | `Ai:TimeoutSeconds`, `Ai:RetryCount` | `Ai__TimeoutSeconds`, `Ai__RetryCount` |
+| Prompt version | `Ai:PromptVersion` | `Ai__PromptVersion` |
 | Azure Document Intelligence | `UniFlow:Ocr:Azure:ApiKey` | `AZURE_DOCUMENT_INTELLIGENCE_KEY` |
 | DB provider | `Database:Provider` | `Database__Provider` |
 | SQL/Postgres connection | `ConnectionStrings:DefaultConnection` | `ConnectionStrings__DefaultConnection` |
@@ -86,9 +92,80 @@ dotnet user-secrets list
 
 ## Validation behavior
 
-- **Development:** `Jwt:Key` required (user-secrets or `JWT_KEY`). Gemini optional (heuristic syllabus parsing when absent).
-- **Production:** JWT key, connection string required; Gemini required outside Development.
-- **Testing:** Integration tests use SQLite in-memory; no external DB.
+- **Development:** `Jwt:Key` required (user-secrets or `JWT_KEY`). AI optional — use `Ai:Provider = Fake` or leave `Ai:ApiKey` empty for heuristic syllabus parsing.
+- **Production:** JWT key, connection string required; `Ai:ApiKey` required when `Ai:Provider` is not `Fake`.
+- **Testing:** Integration tests use SQLite in-memory and `Ai:Provider = Fake` — no external AI calls.
+
+## AI provider configuration
+
+Central section in `appsettings.json` / user-secrets / environment variables:
+
+```json
+{
+  "Ai": {
+    "Provider": "Gemini",
+    "ApiKey": "",
+    "BaseUrl": "https://api.openai.com/v1",
+    "Model": "gemini-2.0-flash",
+    "TimeoutSeconds": 30,
+    "RetryCount": 2,
+    "PromptVersion": "v1",
+    "EnableFallback": true,
+    "LogMetadataOnly": true
+  }
+}
+```
+
+| `Ai:Provider` | Use case |
+| ------------- | -------- |
+| `Gemini` | Google Gemini REST API (default for existing setups) |
+| `OpenAiCompatible` | OpenAI, OpenRouter, Groq, or any OpenAI-style `/chat/completions` gateway |
+| `Fake` | Local/tests — deterministic responses; syllabus scan uses heuristic parser |
+
+Legacy `UniFlow:Gemini` settings still bind; `GEMINI_API_KEY` maps to `Ai:ApiKey` when `Ai:ApiKey` is empty.
+
+### Gemini
+
+```bash
+dotnet user-secrets set "Ai:Provider" "Gemini"
+dotnet user-secrets set "Ai:Model" "gemini-2.0-flash"
+dotnet user-secrets set "Ai:ApiKey" "YOUR_GEMINI_KEY"
+# or: set GEMINI_API_KEY=...
+```
+
+### OpenAI-compatible (OpenRouter example)
+
+Pick a current model from the [OpenRouter model list](https://openrouter.ai/models) — do not rely on hardcoded names.
+
+```bash
+dotnet user-secrets set "Ai:Provider" "OpenAiCompatible"
+dotnet user-secrets set "Ai:BaseUrl" "https://openrouter.ai/api/v1"
+dotnet user-secrets set "Ai:Model" "meta-llama/llama-3.2-3b-instruct:free"
+dotnet user-secrets set "Ai:ApiKey" "YOUR_OPENROUTER_KEY"
+```
+
+### Groq (OpenAI-compatible)
+
+```bash
+dotnet user-secrets set "Ai:Provider" "OpenAiCompatible"
+dotnet user-secrets set "Ai:BaseUrl" "https://api.groq.com/openai/v1"
+dotnet user-secrets set "Ai:Model" "openai/gpt-oss-20b"
+dotnet user-secrets set "Ai:ApiKey" "YOUR_GROQ_KEY"
+```
+
+### Fake provider (local / CI)
+
+```json
+"Ai": { "Provider": "Fake", "Model": "fake-model" }
+```
+
+Chat returns a deterministic stub message. Syllabus scan/confirm uses the heuristic parser (no real API call).
+
+### Logging & storage policy
+
+- Only metadata is logged: provider, model, prompt version, input/output lengths, fallback flag.
+- Prompts, raw OCR text, and raw AI HTTP bodies are **not** logged.
+- `SyllabusTextStorage:StoreAiRawResponse` remains `false` — parsed preview JSON only when enabled.
 
 ## Database migrations
 

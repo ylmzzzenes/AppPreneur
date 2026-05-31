@@ -16,7 +16,7 @@ using UniFlow.DataAccess.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
-builder.Logging.AddFilter("System.Net.Http.HttpClient.IGeminiService", LogLevel.Warning);
+builder.Logging.AddFilter("System.Net.Http.HttpClient.UniFlow.Ai", LogLevel.Warning);
 
 builder.Services.AddUniFlowValidatedOptions(builder.Configuration);
 builder.Services.AddUniFlowDataAccess(builder.Configuration);

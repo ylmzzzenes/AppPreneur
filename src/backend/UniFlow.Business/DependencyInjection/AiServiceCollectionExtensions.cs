@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 using UniFlow.Business.Abstractions;
+using UniFlow.Business.Ai;
+using UniFlow.Business.Ai.Providers;
 using UniFlow.Business.Configuration;
 using UniFlow.Business.Scheduling;
-using UniFlow.Business.Services.Gemini;
 using UniFlow.Business.Services.Ocr;
 using UniFlow.Business.Syllabus;
 
@@ -28,18 +28,26 @@ public static class AiServiceCollectionExtensions
             return sp.GetRequiredKeyedService<IOcrService>(provider);
         });
 
-        var retryPolicy = HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
+        services.AddSingleton<GeminiAiProvider>();
+        services.AddSingleton<OpenAiCompatibleProvider>();
+        services.AddSingleton<FakeAiProvider>();
+        services.AddSingleton<IAiProvider, AiProviderRouter>();
 
         services
-            .AddHttpClient<IGeminiService, GeminiService>((sp, client) =>
+            .AddHttpClient(GeminiAiProvider.HttpClientName, (sp, client) =>
             {
-                var gemini = sp.GetRequiredService<IOptions<UniFlowGeminiOptions>>().Value;
-                client.Timeout = TimeSpan.FromSeconds(gemini.TimeoutSeconds);
+                var ai = sp.GetRequiredService<IOptions<AiOptions>>().Value;
+                client.Timeout = TimeSpan.FromSeconds(ai.TimeoutSeconds);
             })
-            .AddPolicyHandler(retryPolicy);
+            .AddPolicyHandler((services, _) => CreateRetryPolicy(services));
+
+        services
+            .AddHttpClient(OpenAiCompatibleProvider.HttpClientName, (sp, client) =>
+            {
+                var ai = sp.GetRequiredService<IOptions<AiOptions>>().Value;
+                client.Timeout = TimeSpan.FromSeconds(ai.TimeoutSeconds);
+            })
+            .AddPolicyHandler((services, _) => CreateRetryPolicy(services));
 
         services.AddScoped<SyllabusParsingService>();
         services.AddScoped<HeuristicSyllabusParsingService>();
@@ -47,5 +55,19 @@ public static class AiServiceCollectionExtensions
         services.AddSingleton<ITaskPriorityCalculator, AdaptiveTaskPriorityCalculator>();
 
         return services;
+    }
+
+    private static IAsyncPolicy<HttpResponseMessage> CreateRetryPolicy(IServiceProvider services)
+    {
+        var retryCount = services.GetRequiredService<IOptions<AiOptions>>().Value.RetryCount;
+        if (retryCount <= 0)
+        {
+            return Policy.NoOpAsync<HttpResponseMessage>();
+        }
+
+        return HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(retryCount, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
     }
 }

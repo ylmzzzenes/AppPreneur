@@ -1,23 +1,45 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using UniFlow.Business.Abstractions;
+using UniFlow.Business.Ai;
+using UniFlow.Business.Configuration;
 using UniFlow.Entity.Results;
 
 namespace UniFlow.Business.Services;
 
-public sealed class ChatService(IGeminiService geminiService, ILogger<ChatService> logger) : IChatService
+public sealed class ChatService(
+    IAiProvider aiProvider,
+    IOptions<AiOptions> aiOptions,
+    ILogger<ChatService> logger) : IChatService
 {
     private readonly Lazy<string> _promptTemplate = new(LoadPrompt, LazyThreadSafetyMode.ExecutionAndPublication);
 
     public async Task<Result<string>> ReplyAsync(string userMessage, CancellationToken cancellationToken = default)
     {
         var prompt = _promptTemplate.Value.Replace("{{USER_MESSAGE}}", userMessage.Trim(), StringComparison.Ordinal);
-        var result = await geminiService.GenerateTextAsync(prompt, cancellationToken).ConfigureAwait(false);
-        if (!result.IsSuccess)
-        {
-            logger.LogWarning("Chat Gemini error: {Code} {Message}", result.Error?.Code, result.Error?.Message);
-        }
+        var options = aiOptions.Value;
 
-        return result;
+        try
+        {
+            var response = await aiProvider.GenerateTextAsync(
+                    new AiTextRequest
+                    {
+                        UserPrompt = prompt,
+                        PromptVersion = options.PromptVersion,
+                        Model = options.Model,
+                        Metadata = new Dictionary<string, string> { ["kind"] = "chat" },
+                    },
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            AiRequestLogger.LogCompleted(logger, response, prompt.Length);
+            return Result<string>.Success(response.Content);
+        }
+        catch (AiProviderException ex)
+        {
+            AiRequestLogger.LogFailed(logger, ex.Provider, ex.Code);
+            return Result<string>.Fail(ex.Code, ex.Message);
+        }
     }
 
     private static string LoadPrompt()

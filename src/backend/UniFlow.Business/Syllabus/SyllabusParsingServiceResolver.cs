@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using UniFlow.Business.Abstractions;
+using UniFlow.Business.Ai;
 using UniFlow.Business.Configuration;
 using UniFlow.Business.Dtos;
 using UniFlow.Entity.Results;
@@ -8,12 +9,12 @@ using UniFlow.Entity.Results;
 namespace UniFlow.Business.Syllabus;
 
 /// <summary>
-/// Uses Gemini parsing when configured; otherwise heuristic parsing in Development.
+/// Uses AI parsing when configured; otherwise heuristic parsing when fallback is enabled.
 /// </summary>
 public sealed class SyllabusParsingServiceResolver(
-    IOptions<UniFlowGeminiOptions> geminiOptions,
+    IOptions<AiOptions> aiOptions,
     IHostEnvironment hostEnvironment,
-    SyllabusParsingService geminiParsing,
+    SyllabusParsingService aiParsing,
     HeuristicSyllabusParsingService heuristicParsing) : ISyllabusParsingService
 {
     public Task<Result<IReadOnlyList<SyllabusTaskDraft>>> ParseTasksFromSyllabusTextAsync(
@@ -25,16 +26,21 @@ public sealed class SyllabusParsingServiceResolver(
 
     private ISyllabusParsingService Resolve()
     {
-        if (!string.IsNullOrWhiteSpace(geminiOptions.Value.ApiKey))
-        {
-            return geminiParsing;
-        }
+        var ai = aiOptions.Value;
 
-        if (hostEnvironment.IsDevelopment())
+        if (string.Equals(ai.Provider, AiProviders.Fake, StringComparison.OrdinalIgnoreCase))
         {
             return heuristicParsing;
         }
 
-        return geminiParsing;
+        if (string.IsNullOrWhiteSpace(ai.ApiKey) && ai.EnableFallback)
+        {
+            if (hostEnvironment.IsDevelopment() || hostEnvironment.IsEnvironment("Testing"))
+            {
+                return heuristicParsing;
+            }
+        }
+
+        return aiParsing;
     }
 }

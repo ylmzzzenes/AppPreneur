@@ -17,6 +17,12 @@ public static class OptionsConfigurationExtensions
             .PostConfigure(options => ApplyJwtSecrets(configuration, options))
             .ValidateOnStart();
 
+        services.AddSingleton<IValidateOptions<AiOptions>, AiOptionsValidator>();
+        services.AddOptions<AiOptions>()
+            .Bind(configuration.GetSection(AiOptions.SectionName))
+            .PostConfigure(options => ApplyAiSecrets(configuration, options))
+            .ValidateOnStart();
+
         services.AddSingleton<IValidateOptions<UniFlowGeminiOptions>, UniFlowGeminiOptionsValidator>();
         services.AddOptions<UniFlowGeminiOptions>()
             .Bind(configuration.GetSection(UniFlowGeminiOptions.SectionName))
@@ -66,6 +72,40 @@ public static class OptionsConfigurationExtensions
         if (!string.IsNullOrWhiteSpace(apiKey))
         {
             options.ApiKey = apiKey;
+        }
+    }
+
+    private static void ApplyAiSecrets(IConfiguration configuration, AiOptions options)
+    {
+        var apiKey = configuration["AI_API_KEY"] ?? configuration["GEMINI_API_KEY"];
+        if (!string.IsNullOrWhiteSpace(apiKey) && string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            options.ApiKey = apiKey;
+        }
+
+        var geminiSection = configuration.GetSection(UniFlowGeminiOptions.SectionName);
+        if (string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            var legacyKey = geminiSection["ApiKey"];
+            if (!string.IsNullOrWhiteSpace(legacyKey))
+            {
+                options.ApiKey = legacyKey;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(options.Model))
+        {
+            var legacyModel = geminiSection["Model"];
+            if (!string.IsNullOrWhiteSpace(legacyModel))
+            {
+                options.Model = legacyModel;
+            }
+        }
+
+        var legacyTimeout = geminiSection.GetValue<int?>("TimeoutSeconds");
+        if (legacyTimeout is > 0 && options.TimeoutSeconds == 30)
+        {
+            options.TimeoutSeconds = legacyTimeout.Value;
         }
     }
 

@@ -11,7 +11,7 @@ AI-assisted academic planning for university students: syllabus ingestion, daily
 | ORM | Entity Framework Core 8 |
 | Database (target) | **PostgreSQL** via Docker Compose |
 | Database (dev fallback) | SQL Server LocalDB |
-| AI | Google Gemini (optional in Development; heuristic fallback) |
+| AI | Provider abstraction (`Gemini`, `OpenAiCompatible`, `Fake`) |
 | OCR | Stub / Azure Document Intelligence / Tesseract |
 
 ## Main flows
@@ -97,7 +97,15 @@ dotnet build src/frontend/UniFlow.Mobile/UniFlow.Mobile.csproj -f net8.0-android
 | `ConnectionStrings__DefaultConnection` | Database connection string |
 | `Database__Provider` | `SqlServer` or `PostgreSql` |
 | `JWT_KEY` | JWT signing key (min 32 chars) — overrides `Jwt:Key` |
-| `GEMINI_API_KEY` | Gemini API key — overrides `UniFlow:Gemini:ApiKey` |
+| `GEMINI_API_KEY` | Gemini / legacy AI key — maps to `Ai:ApiKey` |
+| `AI_API_KEY` | Primary AI API key — overrides `Ai:ApiKey` |
+| `Ai__Provider` | `Gemini`, `OpenAiCompatible`, or `Fake` |
+| `Ai__ApiKey` | AI provider API key |
+| `Ai__BaseUrl` | OpenAI-compatible base URL (required for `OpenAiCompatible`) |
+| `Ai__Model` | Model name (provider-specific) |
+| `Ai__TimeoutSeconds` | HTTP timeout (default 30) |
+| `Ai__RetryCount` | Transient HTTP retries (default 2) |
+| `Ai__PromptVersion` | Prompt template version tag (default `v1`) |
 | `AZURE_DOCUMENT_INTELLIGENCE_KEY` | Azure OCR key |
 | `UNIFLOW_API_BASE_URL` | Mobile API base URL |
 | `POSTGRES_*` | Docker Compose PostgreSQL (see `.env.example`) |
@@ -118,8 +126,10 @@ Integration tests use SQLite in-memory (`Testing` environment) — no PostgreSQL
 
 - Do **not** commit `.env`, user-secrets, or `appsettings.Local.json`
 - `appsettings.json` ships with empty secrets; set keys via user-secrets or env vars
-- Gemini key is optional in Development (heuristic syllabus parsing)
-- Production requires JWT key, connection string, and Gemini (see backend README)
+- AI prompts, raw OCR text, and raw AI responses are **not** logged
+- Raw AI responses are **not** stored in the database (`StoreAiRawResponse: false`)
+- Gemini key is optional in Development (heuristic syllabus parsing when `Ai:Provider` is `Fake` or key is missing)
+- Production requires JWT key, connection string, and AI key when `Ai:Provider` is not `Fake` (see backend README)
 
 ## Documentation
 
