@@ -18,9 +18,7 @@ public static class DataAccessServiceCollectionExtensions
 
         services.AddDbContext<UniFlowDbContext>((sp, options) =>
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
-            options.UseSqlServer(connectionString);
+            options.ConfigureUniFlowProvider(configuration);
             options.AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
         });
 
