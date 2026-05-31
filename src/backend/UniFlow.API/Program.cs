@@ -22,6 +22,11 @@ builder.Services.AddUniFlowValidatedOptions(builder.Configuration);
 builder.Services.AddUniFlowDataAccess(builder.Configuration);
 builder.Services.AddUniFlowBusiness(builder.Configuration);
 
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<UniFlow.DataAccess.Persistence.UniFlowDbContext>(
+        name: "database",
+        tags: ["ready"]);
+
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = SyllabusUploadConstants.MaxFileSizeBytes;
@@ -88,6 +93,8 @@ var app = builder.Build();
 
 OptionsConfigurationExtensions.ValidateStartupSecrets(app);
 
+await app.ApplyDevelopmentMigrationsAsync().ConfigureAwait(false);
+
 // Resolve validated JWT options so signing key is loaded (including user-secrets / env overrides).
 _ = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
 
@@ -111,6 +118,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 if (app.Environment.IsDevelopment())
