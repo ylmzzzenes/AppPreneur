@@ -101,6 +101,39 @@
                             </VerticalStackLayout>
                         </Border>
 
+                        <Border
+                            Padding="14"
+                            BackgroundColor="{AppThemeBinding Light=#ECFDF5,
+                                                              Dark=#064E3B}"
+                            Stroke="#A7F3D0"
+                            StrokeShape="RoundRectangle 12">
+                            <VerticalStackLayout Spacing="8">
+                                <Label FontFamily="OpenSansSemibold" FontSize="16" Text="Haftalık Özet" />
+                                <Label LineBreakMode="WordWrap" Text="{Binding WeeklySummaryText}" />
+                                <Label FontSize="12" Text="{Binding WeeklyNextFocus, StringFormat='Odak: {0}'}" />
+                                <Button
+                                    BackgroundColor="Transparent"
+                                    BorderColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                                  Dark={StaticResource IndigoBrandDark}}"
+                                    BorderWidth="1"
+                                    Command="{Binding LoadWeeklySummaryCommand}"
+                                    CornerRadius="8"
+                                    FontSize="13"
+                                    Text="Yenile"
+                                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                                Dark={StaticResource IndigoBrandDark}}" />
+                                <ActivityIndicator IsRunning="{Binding IsWeeklyLoading}" IsVisible="{Binding IsWeeklyLoading}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Button
+                            BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                              Dark={StaticResource IndigoBrandDark}}"
+                            Command="{Binding GoToStudyPlanCommand}"
+                            CornerRadius="12"
+                            Text="Çalışma Planı Oluştur"
+                            TextColor="White" />
+
                         <Label
                             FontFamily="OpenSansSemibold"
                             FontSize="18"

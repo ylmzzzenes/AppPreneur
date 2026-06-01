@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="UniFlow.Mobile.Views.StudyPlanPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:UniFlow.Mobile.Models"
+    xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
+    x:DataType="vm:StudyPlanViewModel"
+    Title="Çalışma Planı">
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="14">
+            <Label FontFamily="OpenSansSemibold" FontSize="22" Text="AI Çalışma Planı" />
+
+            <Label Text="Gün sayısı" FontSize="14" />
+            <Picker ItemsSource="{Binding DayOptions}" SelectedItem="{Binding SelectedDays}" />
+
+            <Label Text="Ders (opsiyonel)" FontSize="14" />
+            <Picker
+                ItemsSource="{Binding Courses}"
+                ItemDisplayBinding="{Binding Title}"
+                SelectedItem="{Binding SelectedCourse}"
+                Title="Tüm dersler" />
+
+            <Entry Placeholder="Odak (ör. vize hazırlığı)" Text="{Binding FocusText}" />
+
+            <Button
+                BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
+                                                  Dark={StaticResource IndigoBrandDark}}"
+                Command="{Binding GenerateCommand}"
+                CornerRadius="12"
+                Text="Plan Oluştur"
+                TextColor="White" />
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" />
+
+            <Label Text="{Binding ErrorMessage}" TextColor="IndianRed" />
+
+            <Label FontAttributes="Bold" FontSize="18" IsVisible="{Binding HasPlan}" Text="{Binding PlanTitle}" />
+            <Label IsVisible="{Binding HasPlan}" Text="{Binding PlanSummary}" />
+
+            <CollectionView IsVisible="{Binding HasPlan}" ItemsSource="{Binding PlanDays}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:StudyPlanDayResponseDto">
+                        <Border Margin="0,0,0,10" Padding="12" Stroke="#E0E7FF" StrokeShape="RoundRectangle 10">
+                            <VerticalStackLayout Spacing="6">
+                                <Label FontAttributes="Bold" Text="{Binding Date}" />
+                                <Label Text="{Binding Focus}" />
+                                <CollectionView ItemsSource="{Binding Tasks}">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:StudyPlanTaskResponseDto">
+                                            <Label Text="{Binding Title, StringFormat='• {0}'}" />
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                                <Label FontSize="12" Text="{Binding Tip, StringFormat='İpucu: {0}'}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

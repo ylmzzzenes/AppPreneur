@@ -161,6 +161,30 @@ dotnet user-secrets set "Ai:ApiKey" "YOUR_GROQ_KEY"
 
 Chat returns a deterministic stub message. Syllabus scan/confirm uses the heuristic parser (no real API call).
 
+### AI product endpoints
+
+All require JWT auth and are rate-limited (`RateLimitPolicies.Ai`).
+
+| Endpoint | Description |
+| -------- | ----------- |
+| `POST /api/v1/ai/study-plan` | Generate N-day study plan from pending/upcoming tasks |
+| `POST /api/v1/ai/task-feedback` | Status-change feedback (Done/Missed/Pending) |
+| `GET /api/v1/ai/weekly-summary` | Last 7 days summary with counts |
+
+Request example (study plan):
+
+```json
+{ "courseId": 1, "days": 7, "focus": "exam preparation" }
+```
+
+- `days`: 1–14
+- `courseId`: optional; must belong to the authenticated user
+- Invalid AI JSON → deterministic fallback plan (no raw response stored)
+
+Daily dashboard message uses `PersonalizedDailyMessageService`:
+- `Ai:Provider = Fake` or missing API key → template fallback
+- Active provider → short AI message; failure → template fallback
+
 ### Logging & storage policy
 
 - Only metadata is logged: provider, model, prompt version, input/output lengths, fallback flag.

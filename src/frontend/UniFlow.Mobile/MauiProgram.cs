@@ -40,6 +40,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CourseEditViewModel>();
         builder.Services.AddTransient<TaskCreateEditViewModel>();
         builder.Services.AddTransient<SyllabusPreviewViewModel>();
+        builder.Services.AddTransient<StudyPlanViewModel>();
 
 #if DEBUG
         builder.Logging.AddDebug();

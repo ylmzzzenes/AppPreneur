@@ -42,6 +42,18 @@ public partial class DashboardViewModel(
     [ObservableProperty]
     private bool hasDashboardData;
 
+    [ObservableProperty]
+    private string weeklySummaryText = string.Empty;
+
+    [ObservableProperty]
+    private string weeklyNextFocus = string.Empty;
+
+    [ObservableProperty]
+    private bool hasWeeklySummary;
+
+    [ObservableProperty]
+    private bool isWeeklyLoading;
+
     [RelayCommand]
     private async Task LoadAsync(CancellationToken cancellationToken)
     {
@@ -108,6 +120,40 @@ public partial class DashboardViewModel(
     }
 
     [RelayCommand]
+    private async Task LoadWeeklySummaryAsync(CancellationToken cancellationToken)
+    {
+        IsWeeklyLoading = true;
+        try
+        {
+            var result = await apiClient.GetWeeklySummaryAsync(cancellationToken).ConfigureAwait(false);
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (!result.IsSuccess || result.Data is null)
+                {
+                    EnqueueSnack(result.Error?.Message ?? "Haftalık özet alınamadı.");
+                    return;
+                }
+
+                WeeklySummaryText = result.Data.Summary;
+                WeeklyNextFocus = result.Data.NextWeekFocus;
+                HasWeeklySummary = true;
+            }).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            await MainThread.InvokeOnMainThreadAsync(() => EnqueueSnack("Haftalık özet alınamadı.")).ConfigureAwait(false);
+        }
+        finally
+        {
+            await MainThread.InvokeOnMainThreadAsync(() => IsWeeklyLoading = false).ConfigureAwait(false);
+        }
+    }
+
+    [RelayCommand]
+    private async Task GoToStudyPlanAsync() =>
+        await Shell.Current.GoToAsync(Routes.StudyPlan).ConfigureAwait(false);
+
+    [RelayCommand]
     private async Task MarkTaskDoneAsync(DashboardTaskItemDto task, CancellationToken cancellationToken)
     {
         await UpdateTaskStatusAsync(task, TaskItemStatus.Done, cancellationToken).ConfigureAwait(false);
@@ -165,9 +211,39 @@ public partial class DashboardViewModel(
             return;
         }
 
+        _ = ShowTaskFeedbackAsync(task.Id, newStatus, cancellationToken);
+
         if (LoadCommand.CanExecute(null))
         {
             LoadCommand.Execute(null);
+        }
+    }
+
+    private async Task ShowTaskFeedbackAsync(long taskId, TaskItemStatus newStatus, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var feedback = await apiClient.GenerateTaskFeedbackAsync(
+                new TaskFeedbackRequestDto { TaskId = taskId, NewStatus = newStatus },
+                cancellationToken).ConfigureAwait(false);
+
+            if (!feedback.IsSuccess || feedback.Data is null)
+            {
+                return;
+            }
+
+            var message = $"{feedback.Data.Message}\n\nSonraki adım: {feedback.Data.NextAction}";
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                if (Shell.Current?.CurrentPage is Page page)
+                {
+                    await page.DisplayAlert("AI Geri Bildirim", message, "Tamam").ConfigureAwait(true);
+                }
+            }).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Feedback failure must not break status update flow.
         }
     }
 

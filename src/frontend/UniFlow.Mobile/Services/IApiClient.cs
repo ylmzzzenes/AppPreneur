@@ -71,4 +71,15 @@ public interface IApiClient
     Task<ApiResultDto<bool>> DeleteTaskAsync(long id, CancellationToken cancellationToken = default);
 
     Task<ApiResultDto<string>> SendChatAsync(string message, CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<StudyPlanResponseDto>> GenerateStudyPlanAsync(
+        StudyPlanRequestDto request,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<TaskFeedbackResponseDto>> GenerateTaskFeedbackAsync(
+        TaskFeedbackRequestDto request,
+        CancellationToken cancellationToken = default);
+
+    Task<ApiResultDto<WeeklySummaryResponseDto>> GetWeeklySummaryAsync(
+        CancellationToken cancellationToken = default);
 }

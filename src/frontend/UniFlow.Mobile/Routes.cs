@@ -14,4 +14,5 @@ internal static class Routes
     public const string Courses = "Courses";
     public const string CourseEdit = "CourseEdit";
     public const string TaskCreateEdit = "TaskCreateEdit";
+    public const string StudyPlan = "StudyPlan";
 }

@@ -19,8 +19,10 @@ AI-assisted academic planning for university students: syllabus ingestion, daily
 1. **Register / login** — JWT auth
 2. **Onboarding / profile** — display name, major, goals, personality vibe
 3. **Syllabus scan → preview → confirm** — creates course, syllabus, and tasks
-4. **Dashboard / today** — Big 3, stats, daily message
-5. **Course & task CRUD** — manual management alongside AI-generated tasks
+4. **Dashboard / today** — Big 3, stats, AI/fallback daily message, weekly summary
+5. **AI study plan** — `POST /api/v1/ai/study-plan`
+6. **AI task feedback** — after status change via `POST /api/v1/ai/task-feedback`
+7. **Course & task CRUD** — manual management alongside AI-generated tasks
 
 ## Quick start (Docker — recommended)
 

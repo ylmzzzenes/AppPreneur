@@ -95,6 +95,30 @@ public sealed class ApiClient(HttpClient http) : IApiClient
     public Task<ApiResultDto<string>> SendChatAsync(string message, CancellationToken cancellationToken = default) =>
         PostAsync<string>("api/v1/Chat", new ChatRequestDto { Message = message }, cancellationToken);
 
+    public Task<ApiResultDto<StudyPlanResponseDto>> GenerateStudyPlanAsync(
+        StudyPlanRequestDto request,
+        CancellationToken cancellationToken = default) =>
+        PostAsync<StudyPlanResponseDto>("api/v1/ai/study-plan", request, cancellationToken);
+
+    public Task<ApiResultDto<TaskFeedbackResponseDto>> GenerateTaskFeedbackAsync(
+        TaskFeedbackRequestDto request,
+        CancellationToken cancellationToken = default) =>
+        PostAsync<TaskFeedbackResponseDto>("api/v1/ai/task-feedback", request, cancellationToken);
+
+    public async Task<ApiResultDto<WeeklySummaryResponseDto>> GetWeeklySummaryAsync(
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var response = await http.GetAsync("api/v1/ai/weekly-summary", cancellationToken).ConfigureAwait(false);
+            return await ReadResultAsync<WeeklySummaryResponseDto>(response, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return FailureFromException<WeeklySummaryResponseDto>(ex);
+        }
+    }
+
     public async Task<ApiResultDto<UserProfileDto>> GetMyProfileAsync(CancellationToken cancellationToken = default)
     {
         try
