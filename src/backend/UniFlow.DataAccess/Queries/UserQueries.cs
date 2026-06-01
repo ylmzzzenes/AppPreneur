@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UniFlow.DataAccess.Persistence;
 using UniFlow.Entity.Entities;
 using UniFlow.Entity.Enums;
+using UniFlow.Entity.ReadModels;
 
 namespace UniFlow.DataAccess.Queries;
 
@@ -35,5 +36,18 @@ public sealed class UserQueries : IUserQueries
             .AsNoTracking()
             .Where(u => u.Id == userId)
             .Select(u => (PersonalityVibe?)u.PersonalityVibe)
+            .FirstOrDefaultAsync(cancellationToken);
+
+    public Task<AiUserProfileContext?> GetAiProfileContextAsync(long userId, CancellationToken cancellationToken = default) =>
+        _dbContext.Users
+            .AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => new AiUserProfileContext
+            {
+                DisplayName = u.DisplayName,
+                Major = u.Major,
+                AcademicGoal = u.AcademicGoal,
+                PersonalityVibe = u.PersonalityVibe,
+            })
             .FirstOrDefaultAsync(cancellationToken);
 }

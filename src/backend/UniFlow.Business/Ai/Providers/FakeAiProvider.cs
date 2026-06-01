@@ -27,13 +27,44 @@ public sealed class FakeAiProvider(IOptions<AiOptions> options)
 
     private static string BuildDeterministicContent(AiTextRequest request)
     {
-        if (request.Metadata is not null
-            && request.Metadata.TryGetValue("kind", out var kind)
-            && string.Equals(kind, "chat", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Fake assistant reply for local testing.";
-        }
+        var kind = request.Metadata?.GetValueOrDefault("kind") ?? string.Empty;
 
-        return "[Fake AI] Deterministic response for testing.";
+        return kind.ToLowerInvariant() switch
+        {
+            "chat" => "Fake assistant reply for local testing.",
+            "study-plan" => """
+                {
+                  "title": "Fake Study Plan",
+                  "summary": "Deterministic 7-day plan for testing.",
+                  "days": [
+                    {
+                      "date": "2026-06-01",
+                      "focus": "Öncelikli görevler",
+                      "tasks": [
+                        { "title": "Fake Task A", "estimatedMinutes": 45, "reason": "Yüksek öncelik" }
+                      ],
+                      "tip": "Kısa molalar ver."
+                    }
+                  ]
+                }
+                """,
+            "task-feedback" => """
+                {
+                  "message": "Güzel ilerleme! Bir sonraki göreve geçebilirsin.",
+                  "tone": "Motivational",
+                  "nextAction": "Big 3 listendeki sıradaki göreve bak."
+                }
+                """,
+            "daily-message" => "Bugün odaklı kal — öncelikli görevlerine küçük adımlarla başla.",
+            "weekly-summary" => """
+                {
+                  "summary": "Bu hafta istikrarlı bir tempo yakaladın.",
+                  "strongPoint": "Düzenli takip",
+                  "improvementPoint": "Erken başlama alışkanlığı",
+                  "nextWeekFocus": "Yüksek öncelikli görevler"
+                }
+                """,
+            _ => "[Fake AI] Deterministic response for testing.",
+        };
     }
 }

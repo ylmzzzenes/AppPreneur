@@ -10,12 +10,14 @@ namespace UniFlow.Business.Services;
 public sealed class DashboardService(
     IDashboardQueries dashboardQueries,
     IUserQueries userQueries,
-    IDailyMessageService dailyMessageService) : IDashboardService
+    IPersonalizedDailyMessageService personalizedDailyMessageService) : IDashboardService
 {
     public async Task<Result<DashboardTodayResponse>> GetTodayAsync(long userId, CancellationToken cancellationToken = default)
     {
         var personalityVibe = await userQueries.GetPersonalityVibeAsync(userId, cancellationToken).ConfigureAwait(false)
             ?? PersonalityVibe.Friendly;
+
+        var profile = await userQueries.GetAiProfileContextAsync(userId, cancellationToken).ConfigureAwait(false);
 
         var today = DateTime.UtcNow.Date;
         var rows = await dashboardQueries.ListTaskRowsForUserAsync(userId, cancellationToken).ConfigureAwait(false);
@@ -44,16 +46,19 @@ public sealed class DashboardService(
         var overdueCount = overdue.Count;
         var aiMood = ResolveAiMood(overdueCount, completedToday);
 
-        var dailyMessage = dailyMessageService.BuildDailyMessage(new DailyMessageContext
-        {
-            UserId = userId,
-            Today = today,
-            PersonalityVibe = personalityVibe,
-            OverdueTasksCount = overdueCount,
-            CompletedTodayCount = completedToday,
-            PendingTodayCount = pendingToday,
-            BigThreeTasks = bigThree,
-        });
+        var dailyMessage = await personalizedDailyMessageService.BuildDailyMessageAsync(
+            new DailyMessageContext
+            {
+                UserId = userId,
+                Today = today,
+                PersonalityVibe = personalityVibe,
+                OverdueTasksCount = overdueCount,
+                CompletedTodayCount = completedToday,
+                PendingTodayCount = pendingToday,
+                BigThreeTasks = bigThree,
+            },
+            profile,
+            cancellationToken).ConfigureAwait(false);
 
         return Result<DashboardTodayResponse>.Success(new DashboardTodayResponse
         {

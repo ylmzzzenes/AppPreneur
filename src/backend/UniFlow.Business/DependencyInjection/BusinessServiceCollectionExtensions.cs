@@ -26,7 +26,11 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<ISyllabusIngestionService, SyllabusIngestionService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddSingleton<IDailyMessageService, DailyMessageService>();
+        services.AddScoped<IPersonalizedDailyMessageService, PersonalizedDailyMessageService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IStudyPlanService, StudyPlanService>();
+        services.AddScoped<ITaskFeedbackService, TaskFeedbackService>();
+        services.AddScoped<IWeeklySummaryService, WeeklySummaryService>();
 
         services.AddUniFlowAi(configuration);
 
