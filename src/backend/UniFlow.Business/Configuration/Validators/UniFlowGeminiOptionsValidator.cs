@@ -1,9 +1,8 @@
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace UniFlow.Business.Configuration.Validators;
 
-public sealed class UniFlowGeminiOptionsValidator(IHostEnvironment hostEnvironment) : IValidateOptions<UniFlowGeminiOptions>
+public sealed class UniFlowGeminiOptionsValidator : IValidateOptions<UniFlowGeminiOptions>
 {
     public ValidateOptionsResult Validate(string? name, UniFlowGeminiOptions options)
     {
@@ -17,15 +16,7 @@ public sealed class UniFlowGeminiOptionsValidator(IHostEnvironment hostEnvironme
             return ValidateOptionsResult.Fail("UniFlow:Gemini:TimeoutSeconds must be between 5 and 300.");
         }
 
-        if (!hostEnvironment.IsDevelopment()
-            && !hostEnvironment.IsEnvironment("Testing")
-            && string.IsNullOrWhiteSpace(options.ApiKey))
-        {
-            return ValidateOptionsResult.Fail(
-                "UniFlow:Gemini:ApiKey is required outside Development. " +
-                "Configure via user-secrets, UniFlow__Gemini__ApiKey, or GEMINI_API_KEY.");
-        }
-
+        // ApiKey validation is owned by AiOptionsValidator (Ai section is the primary config).
         return ValidateOptionsResult.Success;
     }
 }

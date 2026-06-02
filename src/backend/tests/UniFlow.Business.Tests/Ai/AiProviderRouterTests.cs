@@ -139,7 +139,31 @@ public sealed class AiOptionsValidatorTests
     }
 
     [Fact]
-    public void FakeProvider_DoesNotRequireApiKey()
+    public void FakeProvider_InDevelopment_DoesNotRequireApiKey()
+    {
+        var result = CreateValidator("Development").Validate(null, new AiOptions
+        {
+            Provider = AiProviders.Fake,
+            Model = "fake",
+        });
+
+        result.Succeeded.Should().BeTrue();
+    }
+
+    [Fact]
+    public void FakeProvider_InTesting_DoesNotRequireApiKey()
+    {
+        var result = CreateValidator("Testing").Validate(null, new AiOptions
+        {
+            Provider = AiProviders.Fake,
+            Model = "fake",
+        });
+
+        result.Succeeded.Should().BeTrue();
+    }
+
+    [Fact]
+    public void FakeProvider_InProduction_FailsValidation()
     {
         var result = CreateValidator("Production").Validate(null, new AiOptions
         {
@@ -147,7 +171,37 @@ public sealed class AiOptionsValidatorTests
             Model = "fake",
         });
 
-        result.Succeeded.Should().BeTrue();
+        result.Failed.Should().BeTrue();
+        result.FailureMessage.Should().Contain("Fake");
+    }
+
+    [Fact]
+    public void OpenAiCompatible_InProduction_WithoutApiKey_FailsValidation()
+    {
+        var result = CreateValidator("Production").Validate(null, new AiOptions
+        {
+            Provider = AiProviders.OpenAiCompatible,
+            Model = "gpt-4o-mini",
+            BaseUrl = "https://api.example.com/v1",
+            ApiKey = "",
+        });
+
+        result.Failed.Should().BeTrue();
+        result.FailureMessage.Should().Contain("ApiKey");
+    }
+
+    [Fact]
+    public void Gemini_InProduction_WithoutApiKey_FailsValidation()
+    {
+        var result = CreateValidator("Production").Validate(null, new AiOptions
+        {
+            Provider = AiProviders.Gemini,
+            Model = "gemini-2.0-flash",
+            ApiKey = "",
+        });
+
+        result.Failed.Should().BeTrue();
+        result.FailureMessage.Should().Contain("ApiKey");
     }
 
     private sealed class FakeHostEnvironment(string name) : Microsoft.Extensions.Hosting.IHostEnvironment

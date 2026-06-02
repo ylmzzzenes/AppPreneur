@@ -36,6 +36,13 @@ public sealed class AiOptionsValidator(IHostEnvironment hostEnvironment) : IVali
 
         if (string.Equals(options.Provider, Ai.AiProviders.Fake, StringComparison.OrdinalIgnoreCase))
         {
+            if (!hostEnvironment.IsDevelopment() && !hostEnvironment.IsEnvironment("Testing"))
+            {
+                return ValidateOptionsResult.Fail(
+                    "Ai:Provider=Fake is not allowed outside Development and Testing. " +
+                    "Use Gemini or OpenAiCompatible with a valid ApiKey in Production.");
+            }
+
             return ValidateOptionsResult.Success;
         }
 
