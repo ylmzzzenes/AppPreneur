@@ -15,9 +15,19 @@
 
     <TabBar Route="MainTabs">
         <ShellContent
-            Title="Görevler"
+            Title="Bugün"
             ContentTemplate="{DataTemplate views:DashboardPage}"
             Route="Dashboard">
+            <ShellContent.Icon>
+                <FontImageSource
+                    Glyph="&#x2600;"
+                    Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent
+            Title="Görevler"
+            ContentTemplate="{DataTemplate views:TasksPage}"
+            Route="Tasks">
             <ShellContent.Icon>
                 <FontImageSource
                     Glyph="&#x2610;"

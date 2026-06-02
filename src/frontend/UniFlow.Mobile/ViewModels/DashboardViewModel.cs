@@ -54,6 +54,12 @@ public partial class DashboardViewModel(
     [ObservableProperty]
     private bool isWeeklyLoading;
 
+    [ObservableProperty]
+    private string? weeklySummaryError;
+
+    [ObservableProperty]
+    private bool hasWeeklySummaryError;
+
     [RelayCommand]
     private async Task LoadAsync(CancellationToken cancellationToken)
     {
@@ -75,36 +81,9 @@ public partial class DashboardViewModel(
                 return;
             }
 
-            var result = await apiClient.GetDashboardTodayAsync(cancellationToken).ConfigureAwait(false);
-
-            if (result.Error?.Code == "UNAUTHORIZED")
-            {
-                await HandleUnauthorizedAsync(cancellationToken).ConfigureAwait(false);
-                return;
-            }
-
-            await MainThread.InvokeOnMainThreadAsync(() =>
-            {
-                if (!result.IsSuccess || result.Data is null)
-                {
-                    EnqueueSnack(result.Error?.Message ?? "Dashboard yüklenemedi.");
-                    HasDashboardData = false;
-                    return;
-                }
-
-                var data = result.Data;
-                DailyMessage = data.DailyMessage;
-                AiMood = data.AiMood;
-                PendingTodayCount = data.PendingTodayCount;
-                CompletedTodayCount = data.CompletedTodayCount;
-                OverdueTasksCount = data.OverdueTasksCount;
-                HasDashboardData = true;
-
-                foreach (var task in data.BigThreeTasks)
-                {
-                    BigThreeTasks.Add(task);
-                }
-            }).ConfigureAwait(false);
+            var dashboardTask = LoadDashboardCoreAsync(cancellationToken);
+            var weeklyTask = LoadWeeklySummaryCoreAsync(showSnackOnError: false, cancellationToken);
+            await Task.WhenAll(dashboardTask, weeklyTask).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -120,9 +99,49 @@ public partial class DashboardViewModel(
     }
 
     [RelayCommand]
-    private async Task LoadWeeklySummaryAsync(CancellationToken cancellationToken)
+    private Task LoadWeeklySummaryAsync(CancellationToken cancellationToken) =>
+        LoadWeeklySummaryCoreAsync(showSnackOnError: true, cancellationToken);
+
+    private async Task LoadDashboardCoreAsync(CancellationToken cancellationToken)
+    {
+        var result = await apiClient.GetDashboardTodayAsync(cancellationToken).ConfigureAwait(false);
+
+        if (result.Error?.Code == "UNAUTHORIZED")
+        {
+            await HandleUnauthorizedAsync(cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            if (!result.IsSuccess || result.Data is null)
+            {
+                EnqueueSnack(result.Error?.Message ?? "Dashboard yüklenemedi.");
+                HasDashboardData = false;
+                return;
+            }
+
+            var data = result.Data;
+            DailyMessage = data.DailyMessage;
+            AiMood = data.AiMood;
+            PendingTodayCount = data.PendingTodayCount;
+            CompletedTodayCount = data.CompletedTodayCount;
+            OverdueTasksCount = data.OverdueTasksCount;
+            HasDashboardData = true;
+
+            foreach (var task in data.BigThreeTasks)
+            {
+                BigThreeTasks.Add(task);
+            }
+        }).ConfigureAwait(false);
+    }
+
+    private async Task LoadWeeklySummaryCoreAsync(bool showSnackOnError, CancellationToken cancellationToken)
     {
         IsWeeklyLoading = true;
+        WeeklySummaryError = null;
+        HasWeeklySummaryError = false;
+
         try
         {
             var result = await apiClient.GetWeeklySummaryAsync(cancellationToken).ConfigureAwait(false);
@@ -130,18 +149,41 @@ public partial class DashboardViewModel(
             {
                 if (!result.IsSuccess || result.Data is null)
                 {
-                    EnqueueSnack(result.Error?.Message ?? "Haftalık özet alınamadı.");
+                    var message = result.Error?.Message ?? "Haftalık özet alınamadı.";
+                    if (showSnackOnError)
+                    {
+                        EnqueueSnack(message);
+                    }
+                    else
+                    {
+                        WeeklySummaryError = message;
+                        HasWeeklySummaryError = true;
+                    }
+
                     return;
                 }
 
                 WeeklySummaryText = result.Data.Summary;
                 WeeklyNextFocus = result.Data.NextWeekFocus;
                 HasWeeklySummary = true;
+                WeeklySummaryError = null;
+                HasWeeklySummaryError = false;
             }).ConfigureAwait(false);
         }
         catch (Exception)
         {
-            await MainThread.InvokeOnMainThreadAsync(() => EnqueueSnack("Haftalık özet alınamadı.")).ConfigureAwait(false);
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (showSnackOnError)
+                {
+                    EnqueueSnack("Haftalık özet alınamadı.");
+                }
+                else
+                {
+                    WeeklySummaryError = "Haftalık özet alınamadı.";
+                    HasWeeklySummaryError = true;
+                }
+            }).ConfigureAwait(false);
         }
         finally
         {
@@ -163,6 +205,12 @@ public partial class DashboardViewModel(
     private async Task MarkTaskPendingAsync(DashboardTaskItemDto task, CancellationToken cancellationToken)
     {
         await UpdateTaskStatusAsync(task, TaskItemStatus.Pending, cancellationToken).ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task MarkTaskMissedAsync(DashboardTaskItemDto task, CancellationToken cancellationToken)
+    {
+        await UpdateTaskStatusAsync(task, TaskItemStatus.Missed, cancellationToken).ConfigureAwait(false);
     }
 
     [RelayCommand]
@@ -211,7 +259,7 @@ public partial class DashboardViewModel(
             return;
         }
 
-        _ = ShowTaskFeedbackAsync(task.Id, newStatus, cancellationToken);
+        _ = TaskFeedbackHelper.TryShowFeedbackAsync(apiClient, task.Id, newStatus, cancellationToken);
 
         if (LoadCommand.CanExecute(null))
         {
@@ -219,39 +267,11 @@ public partial class DashboardViewModel(
         }
     }
 
-    private async Task ShowTaskFeedbackAsync(long taskId, TaskItemStatus newStatus, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var feedback = await apiClient.GenerateTaskFeedbackAsync(
-                new TaskFeedbackRequestDto { TaskId = taskId, NewStatus = newStatus },
-                cancellationToken).ConfigureAwait(false);
-
-            if (!feedback.IsSuccess || feedback.Data is null)
-            {
-                return;
-            }
-
-            var message = $"{feedback.Data.Message}\n\nSonraki adım: {feedback.Data.NextAction}";
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-            {
-                if (Shell.Current?.CurrentPage is Page page)
-                {
-                    await page.DisplayAlert("AI Geri Bildirim", message, "Tamam").ConfigureAwait(true);
-                }
-            }).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Feedback failure must not break status update flow.
-        }
-    }
-
     private async Task HandleUnauthorizedAsync(CancellationToken cancellationToken)
     {
         await tokenStore.ClearAsync(cancellationToken).ConfigureAwait(false);
         userSession.Clear();
-        EnqueueSnack("Oturum süresi doldu. Lütfen tekrar giriş yapın.");
+        EnqueueSnack("Oturum süresi doldu. Lütfen giriş yapın.");
         await MainThread.InvokeOnMainThreadAsync(async () =>
             await Shell.Current.GoToAsync($"//{Routes.Login}")).ConfigureAwait(false);
     }

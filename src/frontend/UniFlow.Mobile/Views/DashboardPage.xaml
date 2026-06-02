@@ -111,6 +111,11 @@
                                 <Label FontFamily="OpenSansSemibold" FontSize="16" Text="Haftalık Özet" />
                                 <Label LineBreakMode="WordWrap" Text="{Binding WeeklySummaryText}" />
                                 <Label FontSize="12" Text="{Binding WeeklyNextFocus, StringFormat='Odak: {0}'}" />
+                                <Label
+                                    FontSize="12"
+                                    IsVisible="{Binding HasWeeklySummaryError}"
+                                    Text="{Binding WeeklySummaryError}"
+                                    TextColor="#B45309" />
                                 <Button
                                     BackgroundColor="Transparent"
                                     BorderColor="{AppThemeBinding Light={StaticResource IndigoBrand},
@@ -200,6 +205,16 @@
                                                     Text="Bekliyor"
                                                     TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
                                                                                 Dark={StaticResource IndigoBrandDark}}" />
+                                                <Button
+                                                    BackgroundColor="Transparent"
+                                                    BorderColor="#B45309"
+                                                    BorderWidth="1"
+                                                    Command="{Binding Source={x:Reference DashboardPageRoot}, Path=BindingContext.MarkTaskMissedCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    CornerRadius="8"
+                                                    FontSize="12"
+                                                    Text="Kaçırıldı"
+                                                    TextColor="#B45309" />
                                             </HorizontalStackLayout>
                                         </VerticalStackLayout>
                                     </Border>
