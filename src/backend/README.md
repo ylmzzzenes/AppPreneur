@@ -93,8 +93,9 @@ dotnet user-secrets list
 ## Validation behavior
 
 - **Development:** `Jwt:Key` required (user-secrets or `JWT_KEY`). AI optional — use `Ai:Provider = Fake` or leave `Ai:ApiKey` empty for heuristic syllabus parsing.
-- **Production:** JWT key, connection string required; `Ai:ApiKey` required when `Ai:Provider` is not `Fake`.
+- **Production:** JWT key, connection string required; `Ai:ApiKey` required when `Ai:Provider` is not `Fake`. **`Ai:Provider=Fake` fails startup validation in Production.**
 - **Testing:** Integration tests use SQLite in-memory and `Ai:Provider = Fake` — no external AI calls.
+- Legacy `UniFlow:Gemini:ApiKey` is optional — primary validation is via the `Ai` section. `GEMINI_API_KEY` still maps to `Ai:ApiKey` when empty.
 
 ## AI provider configuration
 

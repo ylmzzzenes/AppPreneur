@@ -24,6 +24,29 @@ AI-assisted academic planning for university students: syllabus ingestion, daily
 6. **AI task feedback** — after status change via `POST /api/v1/ai/task-feedback`
 7. **Course & task CRUD** — manual management alongside AI-generated tasks
 
+## Demo flow (presentation / handoff)
+
+Use this script for a live demo or onboarding a new developer.
+
+1. **Start the API** — Docker (recommended): `docker compose up --build` · Local: `dotnet run` in `src/backend/UniFlow.API`
+2. **Set mobile API base URL** — `$env:UNIFLOW_API_BASE_URL="http://10.0.2.2:5000/"` (Android emulator + Docker) before building/running the app
+3. **Register** — create a new account in the mobile app
+4. **Complete onboarding** — display name, major, goals, personality vibe
+5. **Create a course** — Dersler tab → + Yeni ders
+6. **Create a task** — Görevler tab → + Yeni görev (or Bugün tab header button)
+7. **Syllabus scan → confirm** — Müfredat tab → scan/preview → confirm (creates course + tasks when using Fake/heuristic or real AI)
+8. **Dashboard Big 3** — Bugün tab shows daily message, stats, and top 3 tasks
+9. **Change task status** — mark Done / Pending / Kaçırıldı on Bugün or Görevler tab
+10. **AI task feedback** — dialog appears after status change (Fake provider returns deterministic fallback)
+11. **Study plan** — Bugün tab → “Çalışma Planı Oluştur”
+12. **Weekly summary** — loads automatically on Bugün tab; tap “Yenile” to refresh
+
+**Health check:** `curl http://localhost:5000/health` (Docker) or `5087` (local `dotnet run`).
+
+**Tests:** `dotnet test src/backend/UniFlow.sln` (111+ tests, SQLite in-memory for integration).
+
+**AI provider:** Prefer `Ai:Provider` section (see below). `Fake` is allowed only in Development/Testing — **not in Production**.
+
 ## Quick start (Docker — recommended)
 
 Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) and .NET 8 SDK.
@@ -132,6 +155,7 @@ Integration tests use SQLite in-memory (`Testing` environment) — no PostgreSQL
 - Raw AI responses are **not** stored in the database (`StoreAiRawResponse: false`)
 - Gemini key is optional in Development (heuristic syllabus parsing when `Ai:Provider` is `Fake` or key is missing)
 - Production requires JWT key, connection string, and AI key when `Ai:Provider` is not `Fake` (see backend README)
+- **`Ai:Provider=Fake` is blocked in Production** — startup validation fails fast
 
 ## Documentation
 
