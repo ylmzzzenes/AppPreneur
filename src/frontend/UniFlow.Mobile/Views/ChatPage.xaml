@@ -6,30 +6,21 @@
     xmlns:models="clr-namespace:UniFlow.Mobile.Models"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:ChatViewModel"
-    Title=""
-    BackgroundColor="{AppThemeBinding Light={StaticResource White},
-                                      Dark={StaticResource OffBlack}}">
+    Style="{StaticResource UniFlowPage}"
+    Title="">
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
         <!-- Üst başlık -->
         <Grid
             Grid.Row="0"
-            Padding="16,12"
-            BackgroundColor="{AppThemeBinding Light={StaticResource White},
-                                              Dark={StaticResource OffBlack}}"
+            Padding="20,16"
+            BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
+                                              Dark={StaticResource SurfacePageDark}}"
             ColumnDefinitions="Auto,*"
             ColumnSpacing="10">
             <Border
                 Grid.Column="0"
-                WidthRequest="42"
-                HeightRequest="42"
-                Padding="0"
-                BackgroundColor="{AppThemeBinding Light=#206366F1,
-                                                  Dark=#40818CF8}}"
-                StrokeThickness="0"
+                Style="{StaticResource UniFlowAvatar}"
                 VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <Ellipse />
-                </Border.StrokeShape>
                 <Label
                     FontSize="17"
                     HorizontalOptions="Center"
@@ -43,8 +34,7 @@
                 Spacing="8"
                 VerticalOptions="Center">
                 <Label
-                    FontFamily="OpenSansSemibold"
-                    FontSize="20"
+                    Style="{StaticResource UniFlowSectionTitle}"
                     Text="Sarkastik Dahi"
                     TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
                                                 Dark={StaticResource IndigoBrandDark}}"
@@ -213,7 +203,7 @@
             Grid.Row="2"
             Spacing="0"
             BackgroundColor="{AppThemeBinding Light={StaticResource White},
-                                               Dark=#18181B}">
+                                               Dark={StaticResource OffBlack}}">
             <Border
                 Padding="12,10"
                 Margin="12,10,12,0"

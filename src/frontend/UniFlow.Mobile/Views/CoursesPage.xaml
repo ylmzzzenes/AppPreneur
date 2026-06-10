@@ -7,53 +7,108 @@
     xmlns:models="clr-namespace:UniFlow.Mobile.Models"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:CoursesViewModel"
-    Title="Dersler">
-    <Grid RowDefinitions="Auto,*">
-        <Button
-            Grid.Row="0"
-            Margin="16,12"
-            Command="{Binding AddCourseCommand}"
-            Text="+ Yeni ders" />
+    Style="{StaticResource UniFlowPage}"
+    Title="">
+    <Grid RowDefinitions="Auto,*" Padding="20,16,20,8">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                <Label Style="{StaticResource UniFlowPageTitle}" Text="Dersler" />
+                <Label Style="{StaticResource UniFlowPageSubtitle}" Text="Derslerini yönet, görevlerini takip et." />
+            </VerticalStackLayout>
+            <Button
+                Grid.Column="1"
+                BackgroundColor="{AppThemeBinding Light=#EEF2FF, Dark=#312E81}"
+                Command="{Binding AddCourseCommand}"
+                CornerRadius="22"
+                FontSize="22"
+                HeightRequest="44"
+                Text="＋"
+                TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                VerticalOptions="Center"
+                WidthRequest="44" />
+        </Grid>
 
         <RefreshView
             Grid.Row="1"
             Command="{Binding LoadCommand}"
             IsRefreshing="{Binding IsLoading, Mode=OneWay}">
-            <CollectionView ItemsSource="{Binding Courses}" Margin="16,0">
+            <CollectionView ItemsSource="{Binding Courses}">
                 <CollectionView.EmptyView>
-                    <Label
-                        HorizontalTextAlignment="Center"
-                        Margin="0,40"
-                        Text="Henüz ders yok. Yeni ders ekleyin."
-                        TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
-                                                    Dark={StaticResource SlateSubtitleDark}}" />
+                    <Border
+                        Margin="0,32,0,0"
+                        Padding="24,32"
+                        BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 16">
+                        <VerticalStackLayout Spacing="12">
+                            <Label FontSize="36" HorizontalTextAlignment="Center" Text="📚" />
+                            <Label
+                                Style="{StaticResource UniFlowEmptyText}"
+                                Text="Henüz ders yok. İlk dersini ekleyerek başla." />
+                            <Button
+                                Style="{StaticResource UniFlowPrimaryButton}"
+                                Command="{Binding AddCourseCommand}"
+                                HorizontalOptions="Center"
+                                Text="Ders ekle" />
+                        </VerticalStackLayout>
+                    </Border>
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:CourseResponseDto">
-                        <Border
-                            Margin="0,0,0,10"
-                            Padding="14"
-                            Stroke="#E0E7FF"
-                            StrokeShape="RoundRectangle 12">
-                            <VerticalStackLayout Spacing="6">
-                                <Label FontAttributes="Bold" Text="{Binding Code}" />
-                                <Label Text="{Binding Title}" />
-                                <Label FontSize="12" Text="{Binding TaskCount, StringFormat='Görev: {0}'}" />
-                                <Label FontSize="12" Text="{Binding ActiveTaskCount, StringFormat='Aktif: {0}'}" />
-                                <HorizontalStackLayout Spacing="8">
+                        <Border Margin="0,0,0,12" Style="{StaticResource UniFlowCard}">
+                            <VerticalStackLayout Spacing="10">
+                                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                    <Border
+                                        BackgroundColor="{AppThemeBinding Light=#EEF2FF, Dark=#312E81}"
+                                        HeightRequest="40"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 10"
+                                        WidthRequest="40">
+                                        <Label
+                                            FontFamily="OpenSansSemibold"
+                                            FontSize="13"
+                                            HorizontalOptions="Center"
+                                            Text="{Binding Code}"
+                                            TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                                            VerticalOptions="Center" />
+                                    </Border>
+                                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                        <Label Style="{StaticResource UniFlowCardTitle}" Text="{Binding Title}" />
+                                        <Label Style="{StaticResource UniFlowMeta}" Text="{Binding Code}" />
+                                    </VerticalStackLayout>
+                                </HorizontalStackLayout>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                    <Border Style="{StaticResource UniFlowStatChip}">
+                                        <Label
+                                            FontSize="12"
+                                            HorizontalTextAlignment="Center"
+                                            Text="{Binding TaskCount, StringFormat='Toplam görev {0}'}" />
+                                    </Border>
+                                    <Border Style="{StaticResource UniFlowStatChip}">
+                                        <Label
+                                            FontSize="12"
+                                            HorizontalTextAlignment="Center"
+                                            Text="{Binding ActiveTaskCount, StringFormat='Aktif {0}'}"
+                                            TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
+                                    </Border>
+                                </Grid>
+                                <BoxView
+                                    HeightRequest="1"
+                                    Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                     <Button
+                                        Grid.Column="0"
+                                        Style="{StaticResource UniFlowChipButton}"
                                         Command="{Binding Source={x:Reference CoursesPageRoot}, Path=BindingContext.EditCourseCommand}"
                                         CommandParameter="{Binding .}"
-                                        FontSize="12"
                                         Text="Düzenle" />
                                     <Button
-                                        BackgroundColor="Transparent"
+                                        Grid.Column="1"
+                                        Style="{StaticResource UniFlowDangerButton}"
                                         Command="{Binding Source={x:Reference CoursesPageRoot}, Path=BindingContext.DeleteCourseCommand}"
                                         CommandParameter="{Binding .}"
-                                        FontSize="12"
-                                        Text="Sil"
-                                        TextColor="#C62828" />
-                                </HorizontalStackLayout>
+                                        Text="Sil" />
+                                </Grid>
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>
@@ -61,11 +116,20 @@
             </CollectionView>
         </RefreshView>
 
-        <Label
+        <Border
             Grid.RowSpan="2"
-            Margin="16"
-            Text="{Binding StatusMessage}"
-            TextColor="#C62828"
-            VerticalOptions="End" />
+            Margin="0,0,0,8"
+            Padding="12,10"
+            BackgroundColor="{AppThemeBinding Light={StaticResource SnackErrorBgLight}, Dark={StaticResource SnackErrorBgDark}}"
+            IsVisible="{Binding StatusMessage, Converter={StaticResource IsNotNullConverter}}"
+            Stroke="#FCA5A5"
+            StrokeShape="RoundRectangle 12"
+            VerticalOptions="End">
+            <Label
+                FontSize="13"
+                LineBreakMode="WordWrap"
+                Text="{Binding StatusMessage}"
+                TextColor="{AppThemeBinding Light={StaticResource SnackErrorTextLight}, Dark={StaticResource SnackErrorTextDark}}" />
+        </Border>
     </Grid>
 </ContentPage>

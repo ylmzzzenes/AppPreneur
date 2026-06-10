@@ -6,53 +6,70 @@
     xmlns:models="clr-namespace:UniFlow.Mobile.Models"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:StudyPlanViewModel"
+    Style="{StaticResource UniFlowPage}"
     Title="Çalışma Planı">
-    <ScrollView Padding="20">
-        <VerticalStackLayout Spacing="14">
-            <Label FontFamily="OpenSansSemibold" FontSize="22" Text="AI Çalışma Planı" />
+    <ScrollView Padding="20,16">
+        <VerticalStackLayout Spacing="16">
+            <VerticalStackLayout Spacing="4">
+                <Label Style="{StaticResource UniFlowPageTitle}" Text="AI çalışma planı" />
+                <Label Style="{StaticResource UniFlowPageSubtitle}" Text="Hedeflerine göre kişisel plan oluştur." />
+            </VerticalStackLayout>
 
-            <Label Text="Gün sayısı" FontSize="14" />
-            <Picker ItemsSource="{Binding DayOptions}" SelectedItem="{Binding SelectedDays}" />
+            <Border Style="{StaticResource UniFlowCard}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Style="{StaticResource UniFlowMeta}" Text="Gün sayısı" />
+                    <Border Style="{StaticResource UniFlowFilterShell}">
+                        <Picker ItemsSource="{Binding DayOptions}" SelectedItem="{Binding SelectedDays}" />
+                    </Border>
 
-            <Label Text="Ders (opsiyonel)" FontSize="14" />
-            <Picker
-                ItemsSource="{Binding Courses}"
-                ItemDisplayBinding="{Binding Title}"
-                SelectedItem="{Binding SelectedCourse}"
-                Title="Tüm dersler" />
+                    <Label Style="{StaticResource UniFlowMeta}" Text="Ders (opsiyonel)" />
+                    <Border Style="{StaticResource UniFlowFilterShell}">
+                        <Picker
+                            ItemsSource="{Binding Courses}"
+                            ItemDisplayBinding="{Binding Title}"
+                            SelectedItem="{Binding SelectedCourse}"
+                            Title="Tüm dersler" />
+                    </Border>
 
-            <Entry Placeholder="Odak (ör. vize hazırlığı)" Text="{Binding FocusText}" />
+                    <Entry Placeholder="Odak (ör. vize hazırlığı)" Text="{Binding FocusText}" />
 
-            <Button
-                BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                  Dark={StaticResource IndigoBrandDark}}"
-                Command="{Binding GenerateCommand}"
-                CornerRadius="12"
-                Text="Plan Oluştur"
-                TextColor="White" />
+                    <Button
+                        Style="{StaticResource UniFlowPrimaryButton}"
+                        Command="{Binding GenerateCommand}"
+                        Text="Plan oluştur" />
+                </VerticalStackLayout>
+            </Border>
 
-            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" />
+            <ActivityIndicator HorizontalOptions="Center" IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" />
 
-            <Label Text="{Binding ErrorMessage}" TextColor="IndianRed" />
+            <Label
+                IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}"
+                Text="{Binding ErrorMessage}"
+                TextColor="{StaticResource Danger}" />
 
-            <Label FontAttributes="Bold" FontSize="18" IsVisible="{Binding HasPlan}" Text="{Binding PlanTitle}" />
-            <Label IsVisible="{Binding HasPlan}" Text="{Binding PlanSummary}" />
+            <VerticalStackLayout IsVisible="{Binding HasPlan}" Spacing="8">
+                <Label Style="{StaticResource UniFlowSectionTitle}" Text="{Binding PlanTitle}" />
+                <Label Style="{StaticResource UniFlowPageSubtitle}" Text="{Binding PlanSummary}" />
+            </VerticalStackLayout>
 
             <CollectionView IsVisible="{Binding HasPlan}" ItemsSource="{Binding PlanDays}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:StudyPlanDayResponseDto">
-                        <Border Margin="0,0,0,10" Padding="12" Stroke="#E0E7FF" StrokeShape="RoundRectangle 10">
-                            <VerticalStackLayout Spacing="6">
-                                <Label FontAttributes="Bold" Text="{Binding Date}" />
-                                <Label Text="{Binding Focus}" />
+                        <Border Margin="0,0,0,12" Style="{StaticResource UniFlowCard}">
+                            <VerticalStackLayout Spacing="8">
+                                <Label Style="{StaticResource UniFlowCardTitle}" Text="{Binding Date}" />
+                                <Label Style="{StaticResource UniFlowMeta}" Text="{Binding Focus}" />
                                 <CollectionView ItemsSource="{Binding Tasks}">
                                     <CollectionView.ItemTemplate>
                                         <DataTemplate x:DataType="models:StudyPlanTaskResponseDto">
-                                            <Label Text="{Binding Title, StringFormat='• {0}'}" />
+                                            <Label Style="{StaticResource UniFlowMeta}" Text="{Binding Title, StringFormat='• {0}'}" />
                                         </DataTemplate>
                                     </CollectionView.ItemTemplate>
                                 </CollectionView>
-                                <Label FontSize="12" Text="{Binding Tip, StringFormat='İpucu: {0}'}" />
+                                <Label
+                                    FontSize="12"
+                                    Text="{Binding Tip, StringFormat='💡 {0}'}"
+                                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>

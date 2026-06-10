@@ -7,64 +7,49 @@
     xmlns:models="clr-namespace:UniFlow.Mobile.Models"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:DashboardViewModel"
+    Style="{StaticResource UniFlowPage}"
     Title="">
     <Grid>
-        <Grid Padding="20,12,20,16" RowDefinitions="Auto,*">
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,14">
+        <Grid Padding="20,16,20,24" RowDefinitions="Auto,*">
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,16">
                 <HorizontalStackLayout Grid.Column="0" Spacing="12" VerticalOptions="Center">
-                    <Border
-                        HeightRequest="44"
-                        WidthRequest="44"
-                        BackgroundColor="{AppThemeBinding Light=#206366F1,
-                                                          Dark=#40818CF8}"
-                        StrokeThickness="0"
-                        VerticalOptions="Center">
+                    <Border Style="{StaticResource UniFlowAvatar}">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding GoToProfileCommand}" />
                         </Border.GestureRecognizers>
-                        <Border.StrokeShape>
-                            <Ellipse />
-                        </Border.StrokeShape>
                         <Label
                             FontFamily="OpenSansSemibold"
-                            FontSize="18"
+                            FontSize="17"
                             HorizontalOptions="Center"
                             Text="{Binding UserInitial}"
-                            TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                        Dark={StaticResource IndigoBrandDark}}"
+                            TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
                             VerticalOptions="Center" />
                     </Border>
                     <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Style="{StaticResource UniFlowPageTitle}" Text="Bugün" />
                         <Label
-                            FontFamily="OpenSansSemibold"
-                            FontSize="28"
-                            Text="Bugün"
-                            TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
-                                                        Dark={StaticResource White}}" />
-                        <Label
-                            FontFamily="OpenSansRegular"
-                            FontSize="13"
-                            Text="Big 3 odak listesi ve günlük mesaj."
-                            TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
-                                                        Dark={StaticResource SlateSubtitleDark}}" />
+                            Style="{StaticResource UniFlowPageSubtitle}"
+                            Text="Big 3 odak listesi ve günlük mesaj." />
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
                 <Button
                     Grid.Column="1"
-                    BackgroundColor="Transparent"
+                    BackgroundColor="{AppThemeBinding Light=#EEF2FF, Dark=#312E81}"
                     Command="{Binding GoToCreateTaskCommand}"
-                    FontSize="22"
-                    Text="➕"
-                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                Dark={StaticResource IndigoBrandDark}}" />
+                    CornerRadius="22"
+                    FontSize="20"
+                    HeightRequest="44"
+                    Text="＋"
+                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                    WidthRequest="44" />
                 <Button
                     Grid.Column="2"
-                    BackgroundColor="Transparent"
+                    Style="{StaticResource UniFlowGhostButton}"
                     Command="{Binding LogoutCommand}"
-                    FontSize="22"
-                    Text="🚪"
-                    TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
-                                                Dark={StaticResource SlateSubtitleDark}}" />
+                    FontSize="20"
+                    Text="⎋"
+                    WidthRequest="44" />
             </Grid>
 
             <RefreshView
@@ -72,150 +57,172 @@
                 Command="{Binding LoadCommand}"
                 IsRefreshing="{Binding IsLoading, Mode=OneWay}">
                 <ScrollView>
-                    <VerticalStackLayout Spacing="14">
-                        <Border
-                            Padding="16"
-                            BackgroundColor="{AppThemeBinding Light=#F5F3FF,
-                                                              Dark=#1E1B4B}"
-                            Stroke="#C7D2FE"
-                            StrokeShape="RoundRectangle 12">
-                            <VerticalStackLayout Spacing="8">
+                    <VerticalStackLayout Spacing="16">
+                        <!-- Günlük mesaj -->
+                        <Border Style="{StaticResource UniFlowAccentCard}">
+                            <VerticalStackLayout Spacing="12">
                                 <Label
                                     FontFamily="OpenSansSemibold"
-                                    FontSize="15"
-                                    Text="{Binding AiMood, StringFormat='Ruh hali: {0}'}"
-                                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                                Dark={StaticResource IndigoBrandDark}}" />
+                                    FontSize="14"
+                                    Text="{Binding AiMood, StringFormat='Ruh hali · {0}'}"
+                                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
                                 <Label
                                     FontFamily="OpenSansRegular"
                                     FontSize="15"
                                     LineBreakMode="WordWrap"
                                     Text="{Binding DailyMessage}"
-                                    TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
-                                                                Dark={StaticResource White}}" />
-                                <HorizontalStackLayout Spacing="12">
-                                    <Label FontSize="12" Text="{Binding PendingTodayCount, StringFormat='Bekleyen: {0}'}" />
-                                    <Label FontSize="12" Text="{Binding CompletedTodayCount, StringFormat='Tamamlanan: {0}'}" />
-                                    <Label FontSize="12" Text="{Binding OverdueTasksCount, StringFormat='Geciken: {0}'}" />
-                                </HorizontalStackLayout>
+                                    TextColor="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                    <Border Style="{StaticResource UniFlowStatChip}">
+                                        <Label
+                                            FontSize="12"
+                                            HorizontalTextAlignment="Center"
+                                            Text="{Binding PendingTodayCount, StringFormat='Bekleyen {0}'}"
+                                            TextColor="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+                                    </Border>
+                                    <Border Style="{StaticResource UniFlowStatChip}">
+                                        <Label
+                                            FontSize="12"
+                                            HorizontalTextAlignment="Center"
+                                            Text="{Binding CompletedTodayCount, StringFormat='Tamam {0}'}"
+                                            TextColor="{StaticResource Success}" />
+                                    </Border>
+                                    <Border Style="{StaticResource UniFlowStatChip}">
+                                        <Label
+                                            FontSize="12"
+                                            HorizontalTextAlignment="Center"
+                                            Text="{Binding OverdueTasksCount, StringFormat='Geciken {0}'}"
+                                            TextColor="{StaticResource Warning}" />
+                                    </Border>
+                                </Grid>
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border
-                            Padding="14"
-                            BackgroundColor="{AppThemeBinding Light=#ECFDF5,
-                                                              Dark=#064E3B}"
-                            Stroke="#A7F3D0"
-                            StrokeShape="RoundRectangle 12">
-                            <VerticalStackLayout Spacing="8">
-                                <Label FontFamily="OpenSansSemibold" FontSize="16" Text="Haftalık Özet" />
-                                <Label LineBreakMode="WordWrap" Text="{Binding WeeklySummaryText}" />
-                                <Label FontSize="12" Text="{Binding WeeklyNextFocus, StringFormat='Odak: {0}'}" />
+                        <!-- Haftalık özet -->
+                        <Border Style="{StaticResource UniFlowCard}">
+                            <VerticalStackLayout Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label
+                                        Grid.Column="0"
+                                        Style="{StaticResource UniFlowSectionTitle}"
+                                        Text="Haftalık özet"
+                                        VerticalOptions="Center" />
+                                    <Button
+                                        Grid.Column="1"
+                                        Style="{StaticResource UniFlowGhostButton}"
+                                        Command="{Binding LoadWeeklySummaryCommand}"
+                                        FontSize="13"
+                                        Text="Yenile"
+                                        VerticalOptions="Center" />
+                                </Grid>
                                 <Label
-                                    FontSize="12"
+                                    FontFamily="OpenSansRegular"
+                                    FontSize="14"
+                                    LineBreakMode="WordWrap"
+                                    Text="{Binding WeeklySummaryText}"
+                                    TextColor="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+                                <Label
+                                    Style="{StaticResource UniFlowMeta}"
+                                    Text="{Binding WeeklyNextFocus, StringFormat='Odak: {0}'}" />
+                                <Label
+                                    FontSize="13"
                                     IsVisible="{Binding HasWeeklySummaryError}"
                                     Text="{Binding WeeklySummaryError}"
-                                    TextColor="#B45309" />
-                                <Button
-                                    BackgroundColor="Transparent"
-                                    BorderColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                                  Dark={StaticResource IndigoBrandDark}}"
-                                    BorderWidth="1"
-                                    Command="{Binding LoadWeeklySummaryCommand}"
-                                    CornerRadius="8"
-                                    FontSize="13"
-                                    Text="Yenile"
-                                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                                Dark={StaticResource IndigoBrandDark}}" />
-                                <ActivityIndicator IsRunning="{Binding IsWeeklyLoading}" IsVisible="{Binding IsWeeklyLoading}" />
+                                    TextColor="{StaticResource Warning}" />
+                                <ActivityIndicator
+                                    HorizontalOptions="Start"
+                                    IsRunning="{Binding IsWeeklyLoading}"
+                                    IsVisible="{Binding IsWeeklyLoading}" />
                             </VerticalStackLayout>
                         </Border>
 
                         <Button
-                            BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                              Dark={StaticResource IndigoBrandDark}}"
+                            Style="{StaticResource UniFlowPrimaryButton}"
                             Command="{Binding GoToStudyPlanCommand}"
-                            CornerRadius="12"
-                            Text="Çalışma Planı Oluştur"
-                            TextColor="White" />
+                            Text="Çalışma planı oluştur" />
 
-                        <Label
-                            FontFamily="OpenSansSemibold"
-                            FontSize="18"
-                            Text="Big 3"
-                            TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
-                                                        Dark={StaticResource White}}" />
+                        <!-- Big 3 -->
+                        <Label Style="{StaticResource UniFlowSectionTitle}" Text="Big 3" />
 
                         <CollectionView ItemsSource="{Binding BigThreeTasks}">
                             <CollectionView.EmptyView>
-                                <VerticalStackLayout Padding="12,24" Spacing="12">
-                                    <Label
-                                        HorizontalTextAlignment="Center"
-                                        Text="Bugün için öncelikli görev yok."
-                                        TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
-                                                                    Dark={StaticResource SlateSubtitleDark}}" />
-                                    <Button
-                                        BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                                          Dark={StaticResource IndigoBrandDark}}"
-                                        Command="{Binding GoToSyllabusCommand}"
-                                        CornerRadius="12"
-                                        HorizontalOptions="Center"
-                                        Text="Müfredat tara"
-                                        TextColor="White" />
-                                </VerticalStackLayout>
+                                <Border
+                                    Margin="0,4,0,0"
+                                    Padding="24,28"
+                                    BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 16">
+                                    <VerticalStackLayout Spacing="14">
+                                        <Label
+                                            FontSize="32"
+                                            HorizontalTextAlignment="Center"
+                                            Text="✨" />
+                                        <Label
+                                            Style="{StaticResource UniFlowEmptyText}"
+                                            Text="Bugün için öncelikli görev yok." />
+                                        <Button
+                                            Style="{StaticResource UniFlowPrimaryButton}"
+                                            Command="{Binding GoToSyllabusCommand}"
+                                            HorizontalOptions="Center"
+                                            Text="Müfredat tara" />
+                                    </VerticalStackLayout>
+                                </Border>
                             </CollectionView.EmptyView>
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:DashboardTaskItemDto">
-                                    <Border
-                                        Margin="0,0,0,10"
-                                        Padding="14"
-                                        BackgroundColor="{AppThemeBinding Light={StaticResource White},
-                                                                          Dark={StaticResource FieldFillDark}}"
-                                        Stroke="#E0E7FF"
-                                        StrokeShape="RoundRectangle 12">
-                                        <VerticalStackLayout Spacing="6">
-                                            <Label
-                                                FontAttributes="Bold"
-                                                Text="{Binding Title}"
-                                                TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
-                                                                            Dark={StaticResource White}}" />
-                                            <Label FontSize="13" Text="{Binding CourseCode, StringFormat='Ders: {0}'}" />
-                                            <Label FontSize="13" Text="{Binding DueDate, StringFormat='Son tarih: {0:d}'}" />
-                                            <Label FontSize="13" Text="{Binding PriorityScore, StringFormat='Öncelik: {0}'}" />
-                                            <Label FontSize="13" Text="{Binding Status, StringFormat='Durum: {0}'}" />
-                                            <HorizontalStackLayout Spacing="8">
+                                    <Border Margin="0,0,0,12" Style="{StaticResource UniFlowCard}">
+                                        <VerticalStackLayout Spacing="10">
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                <Label
+                                                    Grid.Column="0"
+                                                    Style="{StaticResource UniFlowCardTitle}"
+                                                    Text="{Binding Title}" />
+                                                <Border
+                                                    Grid.Column="1"
+                                                    BackgroundColor="{Binding Status, Converter={StaticResource TaskStatusBadgeBg}}"
+                                                    Style="{StaticResource UniFlowStatusBadge}"
+                                                    VerticalOptions="Start">
+                                                    <Label
+                                                        FontFamily="OpenSansSemibold"
+                                                        FontSize="11"
+                                                        Text="{Binding Status, Converter={StaticResource TaskStatusToLabel}}"
+                                                        TextColor="{Binding Status, Converter={StaticResource TaskStatusBadgeText}}" />
+                                                </Border>
+                                            </Grid>
+                                            <HorizontalStackLayout Spacing="16">
+                                                <Label Style="{StaticResource UniFlowMeta}" Text="{Binding CourseCode, StringFormat='📚 {0}'}" />
+                                                <Label Style="{StaticResource UniFlowMeta}" Text="{Binding DueDate, StringFormat='📅 {0:d}'}" />
+                                                <Label Style="{StaticResource UniFlowMeta}" Text="{Binding PriorityScore, StringFormat='⚡ {0}'}" />
+                                            </HorizontalStackLayout>
+                                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
                                                 <Button
-                                                    BackgroundColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                                                      Dark={StaticResource IndigoBrandDark}}"
+                                                    Grid.Column="0"
+                                                    Style="{StaticResource UniFlowChipButton}"
                                                     Command="{Binding Source={x:Reference DashboardPageRoot}, Path=BindingContext.MarkTaskDoneCommand}"
                                                     CommandParameter="{Binding .}"
-                                                    CornerRadius="8"
-                                                    FontSize="12"
-                                                    Text="Tamamlandı"
-                                                    TextColor="White" />
+                                                    Text="Tamam" />
                                                 <Button
-                                                    BackgroundColor="Transparent"
-                                                    BorderColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                                                  Dark={StaticResource IndigoBrandDark}}"
-                                                    BorderWidth="1"
+                                                    Grid.Column="1"
+                                                    Style="{StaticResource UniFlowSecondaryButton}"
                                                     Command="{Binding Source={x:Reference DashboardPageRoot}, Path=BindingContext.MarkTaskPendingCommand}"
                                                     CommandParameter="{Binding .}"
-                                                    CornerRadius="8"
                                                     FontSize="12"
-                                                    Text="Bekliyor"
-                                                    TextColor="{AppThemeBinding Light={StaticResource IndigoBrand},
-                                                                                Dark={StaticResource IndigoBrandDark}}" />
+                                                    Padding="8,8"
+                                                    Text="Bekliyor" />
                                                 <Button
+                                                    Grid.Column="2"
                                                     BackgroundColor="Transparent"
-                                                    BorderColor="#B45309"
+                                                    BorderColor="{StaticResource Warning}"
                                                     BorderWidth="1"
                                                     Command="{Binding Source={x:Reference DashboardPageRoot}, Path=BindingContext.MarkTaskMissedCommand}"
                                                     CommandParameter="{Binding .}"
-                                                    CornerRadius="8"
+                                                    CornerRadius="20"
+                                                    FontFamily="OpenSansSemibold"
                                                     FontSize="12"
+                                                    Padding="8,8"
                                                     Text="Kaçırıldı"
-                                                    TextColor="#B45309" />
-                                            </HorizontalStackLayout>
+                                                    TextColor="{StaticResource Warning}" />
+                                            </Grid>
                                         </VerticalStackLayout>
                                     </Border>
                                 </DataTemplate>
@@ -236,8 +243,7 @@
             TranslationY="-180"
             VerticalOptions="Start"
             ZIndex="100"
-            BackgroundColor="{AppThemeBinding Light={StaticResource SnackErrorBgLight},
-                                               Dark={StaticResource SnackErrorBgDark}}">
+            BackgroundColor="{AppThemeBinding Light={StaticResource SnackErrorBgLight}, Dark={StaticResource SnackErrorBgDark}}">
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="12" />
             </Border.StrokeShape>
@@ -246,8 +252,7 @@
                 FontFamily="OpenSansRegular"
                 FontSize="14"
                 LineBreakMode="WordWrap"
-                TextColor="{AppThemeBinding Light={StaticResource SnackErrorTextLight},
-                                            Dark={StaticResource SnackErrorTextDark}}" />
+                TextColor="{AppThemeBinding Light={StaticResource SnackErrorTextLight}, Dark={StaticResource SnackErrorTextDark}}" />
         </Border>
     </Grid>
 </ContentPage>

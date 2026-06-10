@@ -6,45 +6,55 @@
     xmlns:models="clr-namespace:UniFlow.Mobile.Models"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:TaskCreateEditViewModel"
+    Style="{StaticResource UniFlowPage}"
     Title="Görev">
     <ScrollView>
-        <VerticalStackLayout Padding="24,16" Spacing="14">
-            <Picker
-                ItemDisplayBinding="{Binding Title}"
-                ItemsSource="{Binding Courses}"
-                SelectedItem="{Binding SelectedCourse}"
-                Title="Ders" />
-            <Entry Placeholder="Başlık" Text="{Binding Title}" />
-            <Editor
-                AutoSize="TextChanges"
-                HeightRequest="80"
-                Placeholder="Açıklama"
-                Text="{Binding Description}" />
-            <HorizontalStackLayout Spacing="8">
-                <CheckBox IsChecked="{Binding HasDueDate}" />
-                <Label Text="Son tarih var" VerticalOptions="Center" />
-            </HorizontalStackLayout>
-            <DatePicker Date="{Binding DueDate}" IsEnabled="{Binding HasDueDate}" />
-            <Entry Keyboard="Numeric" Placeholder="Tahmini dakika" Text="{Binding EstimatedMinutes}" />
-            <Entry Keyboard="Numeric" Placeholder="Öncelik (0-100)" Text="{Binding PriorityScore}" />
-            <Picker
-                ItemDisplayBinding="{Binding Label}"
-                ItemsSource="{Binding StatusOptions}"
-                SelectedItem="{Binding SelectedStatus}"
-                Title="Durum" />
-            <Label Text="{Binding StatusMessage}" TextColor="#C62828" />
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-            <Button Command="{Binding SaveCommand}" Text="Kaydet" />
+        <VerticalStackLayout Padding="20,16" Spacing="16">
+            <Border Style="{StaticResource UniFlowCard}">
+                <VerticalStackLayout Spacing="12">
+                    <Border Style="{StaticResource UniFlowFilterShell}">
+                        <Picker
+                            ItemDisplayBinding="{Binding Title}"
+                            ItemsSource="{Binding Courses}"
+                            SelectedItem="{Binding SelectedCourse}"
+                            Title="Ders" />
+                    </Border>
+                    <Entry FontFamily="OpenSansSemibold" Placeholder="Başlık" Text="{Binding Title}" />
+                    <Editor
+                        AutoSize="TextChanges"
+                        HeightRequest="96"
+                        Placeholder="Açıklama"
+                        Text="{Binding Description}" />
+                    <HorizontalStackLayout Spacing="10">
+                        <CheckBox IsChecked="{Binding HasDueDate}" Color="{StaticResource IndigoBrand}" />
+                        <Label Style="{StaticResource UniFlowMeta}" Text="Son tarih var" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <DatePicker Date="{Binding DueDate}" IsEnabled="{Binding HasDueDate}" />
+                    <Entry Keyboard="Numeric" Placeholder="Tahmini dakika" Text="{Binding EstimatedMinutes}" />
+                    <Entry Keyboard="Numeric" Placeholder="Öncelik (0-100)" Text="{Binding PriorityScore}" />
+                    <Border Style="{StaticResource UniFlowFilterShell}">
+                        <Picker
+                            ItemDisplayBinding="{Binding Label}"
+                            ItemsSource="{Binding StatusOptions}"
+                            SelectedItem="{Binding SelectedStatus}"
+                            Title="Durum" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label
+                IsVisible="{Binding StatusMessage, Converter={StaticResource IsNotNullConverter}}"
+                Text="{Binding StatusMessage}"
+                TextColor="{StaticResource Danger}" />
+            <ActivityIndicator HorizontalOptions="Center" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+            <Button Style="{StaticResource UniFlowPrimaryButton}" Command="{Binding SaveCommand}" Text="Kaydet" />
             <Button
-                BackgroundColor="Transparent"
+                Style="{StaticResource UniFlowDangerButton}"
                 Command="{Binding DeleteCommand}"
                 IsVisible="{Binding IsEditMode}"
-                Text="Sil"
-                TextColor="#C62828" />
-            <Button
-                BackgroundColor="Transparent"
-                Command="{Binding CancelCommand}"
-                Text="İptal" />
+                Text="Görevi sil" />
+            <Button Style="{StaticResource UniFlowGhostButton}" Command="{Binding CancelCommand}" Text="İptal" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

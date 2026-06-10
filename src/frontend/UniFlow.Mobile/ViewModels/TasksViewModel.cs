@@ -171,6 +171,9 @@ public partial class TasksViewModel(
     }
 
     [RelayCommand]
+    private void ClearCourseFilter() => SelectedCourse = null;
+
+    [RelayCommand]
     private Task AddTaskAsync() => Shell.Current.GoToAsync(Routes.TaskCreateEdit);
 
     [RelayCommand]

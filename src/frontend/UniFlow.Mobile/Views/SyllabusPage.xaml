@@ -5,27 +5,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:SyllabusViewModel"
-    Title=""
-    BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
-                                      Dark={StaticResource SurfacePageDark}}">
+    Style="{StaticResource UniFlowPage}"
+    Title="">
     <Grid RowDefinitions="*,Auto" RowSpacing="0">
         <ScrollView Grid.Row="0">
             <VerticalStackLayout Padding="24,16,24,96" Spacing="20">
                 <!-- Başlık -->
                 <VerticalStackLayout Spacing="6">
+                    <Label Style="{StaticResource UniFlowPageTitle}" Text="Müfredat" />
                     <Label
-                        FontFamily="OpenSansSemibold"
-                        FontSize="26"
-                        Text="Müfredat işle"
-                        TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
-                                                    Dark={StaticResource White}}" />
-                    <Label
-                        FontFamily="OpenSansRegular"
-                        FontSize="15"
-                        LineHeight="1.25"
-                        Text="Ders detaylarını gir; müfredat görselini ekle — AI görev çıkarmayı başlatır."
-                        TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
-                                                    Dark={StaticResource SlateSubtitleDark}}" />
+                        Style="{StaticResource UniFlowPageSubtitle}"
+                        Text="Ders detaylarını gir; müfredat görselini ekle — AI görev çıkarmayı başlatır." />
                 </VerticalStackLayout>
 
                 <!-- Ders bilgileri kartı -->
