@@ -311,26 +311,163 @@ public sealed class ApiClient(HttpClient http) : IApiClient
             return statusError;
         }
 
-        try
+        var raw = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+        var body = System.Text.Encoding.UTF8.GetString(raw);
+        if (string.IsNullOrWhiteSpace(body))
         {
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var result = await JsonSerializer.DeserializeAsync<ApiResultDto<T>>(stream, JsonOptions, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (result is not null)
-            {
-                return result;
-            }
-
             return new ApiResultDto<T>
             {
                 IsSuccess = false,
                 Error = new ApiErrorDto { Code = "PARSE", Message = "Sunucu yanıtı okunamadı." },
             };
         }
-        catch (Exception ex)
+
+        if (TryParseResultEnvelope<T>(body, out var envelope))
         {
-            return FailureFromException<T>(ex);
+            return envelope;
+        }
+
+        if (TryParseProblemDetails(body, out var problemMessage))
+        {
+            return new ApiResultDto<T>
+            {
+                IsSuccess = false,
+                Error = new ApiErrorDto { Code = "VALIDATION", Message = problemMessage },
+            };
+        }
+
+        try
+        {
+            var result = JsonSerializer.Deserialize<ApiResultDto<T>>(body, JsonOptions);
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+        catch (JsonException)
+        {
+            // Fall through to generic client error below.
+        }
+
+        return new ApiResultDto<T>
+        {
+            IsSuccess = false,
+            Error = new ApiErrorDto { Code = "PARSE", Message = "Sunucu yanıtı beklenen formatta değil." },
+        };
+    }
+
+    private static bool TryParseResultEnvelope<T>(string raw, out ApiResultDto<T> result)
+    {
+        result = new ApiResultDto<T>();
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            if (!TryGetPropertyIgnoreCase(root, "isSuccess", out var isSuccessElement))
+            {
+                return false;
+            }
+
+            result.IsSuccess = isSuccessElement.ValueKind == JsonValueKind.True;
+
+            if (TryGetPropertyIgnoreCase(root, "data", out var dataElement)
+                && dataElement.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined)
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    result.Data = (T?)(object?)ReadStringElement(dataElement);
+                }
+                else
+                {
+                    result.Data = dataElement.Deserialize<T>(JsonOptions);
+                }
+            }
+
+            if (TryGetPropertyIgnoreCase(root, "error", out var errorElement)
+                && errorElement.ValueKind == JsonValueKind.Object)
+            {
+                result.Error = ReadErrorElement(errorElement);
+            }
+
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static bool TryGetPropertyIgnoreCase(JsonElement element, string name, out JsonElement value)
+    {
+        if (element.TryGetProperty(name, out value))
+        {
+            return true;
+        }
+
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static ApiErrorDto ReadErrorElement(JsonElement errorElement)
+    {
+        TryGetPropertyIgnoreCase(errorElement, "code", out var codeElement);
+        TryGetPropertyIgnoreCase(errorElement, "message", out var messageElement);
+
+        return new ApiErrorDto
+        {
+            Code = codeElement.ValueKind == JsonValueKind.String ? codeElement.GetString() ?? string.Empty : string.Empty,
+            Message = messageElement.ValueKind == JsonValueKind.String ? messageElement.GetString() ?? string.Empty : string.Empty,
+        };
+    }
+
+    private static string? ReadStringElement(JsonElement element) =>
+        element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False => element.GetRawText(),
+            _ => element.GetRawText(),
+        };
+
+    private static bool TryParseProblemDetails(string raw, out string message)
+    {
+        message = string.Empty;
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            if (!root.TryGetProperty("title", out var titleElement))
+            {
+                return false;
+            }
+
+            message = titleElement.GetString() ?? "İstek doğrulanamadı.";
+
+            if (root.TryGetProperty("errors", out var errorsElement) && errorsElement.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in errorsElement.EnumerateObject())
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Array && property.Value.GetArrayLength() > 0)
+                    {
+                        message = property.Value[0].GetString() ?? message;
+                        return true;
+                    }
+                }
+            }
+
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
         }
     }
 

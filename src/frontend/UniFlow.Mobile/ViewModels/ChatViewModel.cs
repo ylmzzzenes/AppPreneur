@@ -51,12 +51,18 @@ public partial class ChatViewModel(IApiClient apiClient) : ObservableObject
             var result = await apiClient.SendChatAsync(text, cancellationToken).ConfigureAwait(false);
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                if (!result.IsSuccess || result.Data is null)
+                if (!result.IsSuccess || string.IsNullOrWhiteSpace(result.Data))
                 {
-                    StatusMessage = result.Error?.Message ?? "Yanıt alınamadı.";
+                    var message = result.Error?.Message;
+                    if (string.IsNullOrWhiteSpace(message))
+                    {
+                        message = "Yanıt alınamadı.";
+                    }
+
+                    StatusMessage = message;
                     Messages.Add(new ChatMessageModel
                     {
-                        Text = StatusMessage ?? "Bir hata oluştu.",
+                        Text = message,
                         IsFromUser = false,
                     });
                     return;
