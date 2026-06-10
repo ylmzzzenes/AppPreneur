@@ -21,11 +21,7 @@ public sealed class ChatController(IChatService chatService) : ControllerBase
     public async Task<IActionResult> Post([FromBody] ChatRequest request, CancellationToken cancellationToken)
     {
         var result = await chatService.ReplyAsync(request.Message, cancellationToken).ConfigureAwait(false);
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result);
-        }
-
+        // Always 200 + Result envelope — some mobile HTTP stacks drop 400 response bodies.
         return Ok(result);
     }
 }

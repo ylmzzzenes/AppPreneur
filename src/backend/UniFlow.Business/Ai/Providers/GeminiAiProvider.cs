@@ -55,10 +55,11 @@ public sealed class GeminiAiProvider
 
         if (!response.IsSuccessStatusCode)
         {
-            AiRequestLogger.LogFailed(_logger, AiProviders.Gemini, "AI_HTTP", (int)response.StatusCode);
+            var status = (int)response.StatusCode;
+            AiRequestLogger.LogFailed(_logger, AiProviders.Gemini, "AI_HTTP", status);
             throw new AiProviderException(
                 "AI_HTTP",
-                $"AI request failed with status {(int)response.StatusCode}.",
+                BuildHttpErrorMessage(status),
                 AiProviders.Gemini);
         }
 
@@ -101,6 +102,19 @@ public sealed class GeminiAiProvider
             throw new AiProviderException("AI_PARSE", "Could not parse AI response.", AiProviders.Gemini);
         }
     }
+
+    private static string BuildHttpErrorMessage(int statusCode) =>
+        statusCode switch
+        {
+            401 or 403 =>
+                "Gemini API key geçersiz. Google AI Studio'dan alınan AIzaSy... ile başlayan key kullanın (user-secrets: Ai:ApiKey).",
+            404 =>
+                "Gemini model bulunamadı. Ai:Model değerini kontrol edin (ör. gemini-2.0-flash).",
+            429 => "Gemini rate limit aşıldı. Kısa süre sonra tekrar deneyin.",
+            503 =>
+                "Gemini geçici olarak kullanılamıyor veya model/key hatalı. Modeli gemini-2.0-flash yapıp AIzaSy key ile deneyin.",
+            _ => $"Gemini isteği başarısız (HTTP {statusCode}).",
+        };
 
     private static object BuildRequestBody(AiTextRequest request)
     {
