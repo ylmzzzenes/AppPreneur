@@ -36,6 +36,15 @@
     <Color x:Key="SnackErrorBgDark">#450A0A</Color>
     <Color x:Key="SnackErrorTextLight">#991B1B</Color>
     <Color x:Key="SnackErrorTextDark">#FECACA</Color>
+    <Color x:Key="CardStrokeLight">#E2E8F0</Color>
+    <Color x:Key="CardStrokeDark">#334155</Color>
+    <Color x:Key="AccentCardLight">#F5F3FF</Color>
+    <Color x:Key="AccentCardDark">#1E1B4B</Color>
+    <Color x:Key="AccentStrokeLight">#C7D2FE</Color>
+    <Color x:Key="AccentStrokeDark">#4338CA</Color>
+    <Color x:Key="Success">#16A34A</Color>
+    <Color x:Key="Warning">#D97706</Color>
+    <Color x:Key="Danger">#DC2626</Color>
     <Color x:Key="PrimaryDark">#ac99ea</Color>
     <Color x:Key="PrimaryDarkText">#242424</Color>
     <Color x:Key="Secondary">#DFD8F7</Color>

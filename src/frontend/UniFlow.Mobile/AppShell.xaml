@@ -16,6 +16,7 @@
     <TabBar Route="MainTabs">
         <ShellContent
             Title="Bugün"
+            Shell.NavBarIsVisible="False"
             ContentTemplate="{DataTemplate views:DashboardPage}"
             Route="Dashboard">
             <ShellContent.Icon>
@@ -26,6 +27,7 @@
         </ShellContent>
         <ShellContent
             Title="Görevler"
+            Shell.NavBarIsVisible="False"
             ContentTemplate="{DataTemplate views:TasksPage}"
             Route="Tasks">
             <ShellContent.Icon>
@@ -36,6 +38,7 @@
         </ShellContent>
         <ShellContent
             Title="Dersler"
+            Shell.NavBarIsVisible="False"
             ContentTemplate="{DataTemplate views:CoursesPage}"
             Route="Courses">
             <ShellContent.Icon>
@@ -46,6 +49,7 @@
         </ShellContent>
         <ShellContent
             Title="Sohbet"
+            Shell.NavBarIsVisible="False"
             ContentTemplate="{DataTemplate views:ChatPage}"
             Route="Chat">
             <ShellContent.Icon>
@@ -56,6 +60,7 @@
         </ShellContent>
         <ShellContent
             Title="Müfredat"
+            Shell.NavBarIsVisible="False"
             ContentTemplate="{DataTemplate views:SyllabusPage}"
             Route="Syllabus">
             <ShellContent.Icon>

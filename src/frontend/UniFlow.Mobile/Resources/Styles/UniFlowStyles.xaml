@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:conv="clr-namespace:UniFlow.Mobile.Converters">
+
+    <conv:TaskStatusToLabelConverter x:Key="TaskStatusToLabel" />
+    <conv:TaskStatusToBadgeBgConverter x:Key="TaskStatusBadgeBg" />
+    <conv:TaskStatusToBadgeTextConverter x:Key="TaskStatusBadgeText" />
+    <conv:IsNotNullConverter x:Key="IsNotNullConverter" />
+
+    <!-- Page -->
+    <Style x:Key="UniFlowPage" TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfacePage}, Dark={StaticResource SurfacePageDark}}" />
+    </Style>
+
+    <!-- Cards -->
+    <Style x:Key="UniFlowCard" TargetType="Border">
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource FieldFillDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{AppThemeBinding Light=#14000000, Dark=#66000000}" Offset="0,4" Radius="12" Opacity="0.35" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="UniFlowAccentCard" TargetType="Border" BasedOn="{StaticResource UniFlowCard}">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AccentCardLight}, Dark={StaticResource AccentCardDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource AccentStrokeLight}, Dark={StaticResource AccentStrokeDark}}" />
+    </Style>
+
+    <!-- Typography -->
+    <Style x:Key="UniFlowPageTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+    </Style>
+
+    <Style x:Key="UniFlowPageSubtitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineBreakMode" Value="WordWrap" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateSubtitle}, Dark={StaticResource SlateSubtitleDark}}" />
+    </Style>
+
+    <Style x:Key="UniFlowSectionTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+    </Style>
+
+    <Style x:Key="UniFlowCardTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+    </Style>
+
+    <Style x:Key="UniFlowMeta" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateSubtitle}, Dark={StaticResource SlateSubtitleDark}}" />
+    </Style>
+
+    <!-- Buttons -->
+    <Style x:Key="UniFlowPrimaryButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="16,14" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style x:Key="UniFlowSecondaryButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource FieldFillDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
+        <Setter Property="BorderWidth" Value="1.5" />
+        <Setter Property="Padding" Value="12,10" />
+    </Style>
+
+    <Style x:Key="UniFlowGhostButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateSubtitle}, Dark={StaticResource SlateSubtitleDark}}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="8" />
+    </Style>
+
+    <Style x:Key="UniFlowDangerButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource Danger}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="10,8" />
+    </Style>
+
+    <Style x:Key="UniFlowChipButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#EEF2FF, Dark=#312E81}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="MinimumHeightRequest" Value="36" />
+    </Style>
+
+    <!-- Filter picker shell -->
+    <Style x:Key="UniFlowFilterShell" TargetType="Border">
+        <Setter Property="Padding" Value="12,4" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource FieldFillDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+    </Style>
+
+    <Style x:Key="UniFlowFilterPicker" TargetType="Picker">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
+        <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource SlateSubtitle}, Dark={StaticResource SlateSubtitleDark}}" />
+    </Style>
+
+    <!-- Stat chip -->
+    <Style x:Key="UniFlowStatChip" TargetType="Border">
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+    </Style>
+
+    <!-- Status badge -->
+    <Style x:Key="UniFlowStatusBadge" TargetType="Border">
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+    </Style>
+
+    <!-- Avatar -->
+    <Style x:Key="UniFlowAvatar" TargetType="Border">
+        <Setter Property="WidthRequest" Value="44" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LoginHeroCircleLight}, Dark={StaticResource LoginHeroCircleDark}}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="Ellipse" />
+    </Style>
+
+    <!-- Empty state -->
+    <Style x:Key="UniFlowEmptyText" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SlateSubtitle}, Dark={StaticResource SlateSubtitleDark}}" />
+    </Style>
+
+</ResourceDictionary>
