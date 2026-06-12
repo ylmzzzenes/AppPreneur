@@ -1,0 +1,27 @@
+**/.git
+**/.vs
+**/.vscode
+**/.idea
+**/bin
+**/obj
+**/node_modules
+**/*.user
+**/*.suo
+.env
+.env.*
+!.env.example
+
+# Mobile app — not part of API image
+src/frontend/
+
+# Docs and misc
+docs/
+*.md
+!src/backend/**/*.md
+
+# Test projects — not needed in runtime image
+src/backend/tests/
+
+# Local secrets
+**/appsettings.Development.json
+**/secrets.json

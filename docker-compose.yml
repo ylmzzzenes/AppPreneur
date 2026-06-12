@@ -2,12 +2,13 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: uniflow-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-uniflow}
       POSTGRES_USER: ${POSTGRES_USER:-uniflow}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-uniflow_dev_password}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - uniflow_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -22,28 +23,52 @@ services:
       context: .
       dockerfile: src/backend/UniFlow.API/Dockerfile
     container_name: uniflow-api
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "5000:8080"
+      - "${API_PORT:-5000}:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      # Database
       Database__Provider: ${DATABASE_PROVIDER:-PostgreSql}
-      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=uniflow;Username=uniflow;Password=uniflow_dev_password}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB:-uniflow};Username=${POSTGRES_USER:-uniflow};Password=${POSTGRES_PASSWORD:-uniflow_dev_password}
+      # JWT (JWT_KEY is the primary env var; Jwt__Key is supported by ASP.NET config)
       JWT_KEY: ${JWT_KEY:-dev-jwt-secret-for-local-docker-compose-only-32c}
+      Jwt__Key: ${JWT_KEY:-dev-jwt-secret-for-local-docker-compose-only-32c}
+      # AI — Ai__* maps to appsettings Ai section
       Ai__Provider: ${Ai__Provider:-Gemini}
       Ai__ApiKey: ${Ai__ApiKey:-}
       Ai__BaseUrl: ${Ai__BaseUrl:-https://api.openai.com/v1}
       Ai__Model: ${Ai__Model:-gemini-2.5-flash}
       Ai__TimeoutSeconds: ${Ai__TimeoutSeconds:-30}
       Ai__RetryCount: ${Ai__RetryCount:-2}
+      Ai__PromptVersion: ${Ai__PromptVersion:-v1}
       Ai__EnableFallback: ${Ai__EnableFallback:-true}
+      Ai__LogMetadataOnly: ${Ai__LogMetadataOnly:-true}
+      Ai__ChatSystemPrompt: ${Ai__ChatSystemPrompt:-}
+      # Legacy / alternate AI key env vars (used when Ai__ApiKey is empty)
       AI_API_KEY: ${AI_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # Legacy UniFlow:Gemini bind (optional)
+      UniFlow__Gemini__ApiKey: ${UniFlow__Gemini__ApiKey:-}
+      UniFlow__Gemini__Model: ${UniFlow__Gemini__Model:-gemini-2.5-flash}
+      UniFlow__Gemini__TimeoutSeconds: ${UniFlow__Gemini__TimeoutSeconds:-120}
+      # OCR — Gemini multimodal uses Ai:ApiKey; Stub works without a key (text files only)
+      UniFlow__Ocr__Provider: ${UniFlow__Ocr__Provider:-Gemini}
+      UniFlow__Ocr__Azure__Endpoint: ${UniFlow__Ocr__Azure__Endpoint:-}
+      UniFlow__Ocr__Azure__ApiKey: ${UniFlow__Ocr__Azure__ApiKey:-}
+      AZURE_DOCUMENT_INTELLIGENCE_KEY: ${AZURE_DOCUMENT_INTELLIGENCE_KEY:-}
     env_file:
       - path: .env
         required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
 
 volumes:
   uniflow_pgdata:
