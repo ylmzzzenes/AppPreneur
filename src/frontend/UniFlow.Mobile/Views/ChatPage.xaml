@@ -69,6 +69,26 @@
                 ItemsSource="{Binding Messages}"
                 SelectionMode="None"
                 VerticalOptions="Fill">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout
+                        Padding="32,48"
+                        HorizontalOptions="Center"
+                        Spacing="12"
+                        VerticalOptions="Center">
+                        <Label
+                            FontSize="40"
+                            HorizontalTextAlignment="Center"
+                            Text="💬" />
+                        <Label
+                            Style="{StaticResource UniFlowEmptyText}"
+                            Text="Merhaba! Derslerin ve görevlerin hakkında soru sorabilirsin." />
+                        <Label
+                            FontSize="13"
+                            HorizontalTextAlignment="Center"
+                            Text="Örn: Bugün neye odaklanmalıyım?"
+                            TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle}, Dark={StaticResource SlateSubtitleDark}}" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:ChatMessageModel">
                         <HorizontalStackLayout Padding="4,0,4,10" HorizontalOptions="Fill">
@@ -269,6 +289,7 @@
                     CornerRadius="26"
                     FontSize="17"
                     HeightRequest="52"
+                    IsEnabled="{Binding IsThinking, Converter={StaticResource InvertedBoolConverter}}"
                     SemanticProperties.Description="Gönder"
                     Text="➤"
                     TextColor="White"

@@ -5,48 +5,51 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:UniFlow.Mobile.ViewModels"
     x:DataType="vm:OnboardingViewModel"
-    Title="Profilini tamamla"
-    BackgroundColor="{AppThemeBinding Light={StaticResource SurfacePage},
-                                      Dark={StaticResource SurfacePageDark}}">
+    Style="{StaticResource UniFlowPage}"
+    Title="Profilini tamamla">
     <ScrollView>
         <VerticalStackLayout Padding="24,20" Spacing="16">
-            <Label
-                FontFamily="OpenSansSemibold"
-                FontSize="26"
-                Text="Hoş geldin"
-                TextColor="{AppThemeBinding Light={StaticResource SlateHeader},
-                                            Dark={StaticResource White}}" />
-            <Label
-                FontFamily="OpenSansRegular"
-                FontSize="14"
-                Text="UniFlow deneyimini kişiselleştirmek için birkaç bilgi paylaş."
-                TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle},
-                                            Dark={StaticResource SlateSubtitleDark}}" />
+            <VerticalStackLayout Spacing="6">
+                <Label Style="{StaticResource UniFlowPageTitle}" Text="Hoş geldin" />
+                <Label
+                    Style="{StaticResource UniFlowPageSubtitle}"
+                    Text="UniFlow deneyimini kişiselleştirmek için birkaç bilgi paylaş." />
+            </VerticalStackLayout>
 
-            <Entry Placeholder="Görünen ad" Text="{Binding DisplayName}" />
-            <Entry Placeholder="Bölüm / Major" Text="{Binding Major}" />
-            <Editor
-                AutoSize="TextChanges"
-                HeightRequest="90"
-                Placeholder="Akademik hedefin"
-                Text="{Binding AcademicGoal}" />
-            <Picker
-                ItemDisplayBinding="{Binding Label}"
-                ItemsSource="{Binding PersonalityOptions}"
-                SelectedItem="{Binding SelectedPersonality}"
-                Title="Motivasyon tarzı" />
-            <Entry
-                Keyboard="Numeric"
-                Placeholder="Günlük çalışma hedefi (dakika)"
-                Text="{Binding DailyStudyTargetMinutes}" />
+            <Border Style="{StaticResource UniFlowCard}">
+                <VerticalStackLayout Spacing="14">
+                    <Entry Placeholder="Görünen ad" Text="{Binding DisplayName}" />
+                    <Entry Placeholder="Bölüm / Major" Text="{Binding Major}" />
+                    <Editor
+                        AutoSize="TextChanges"
+                        HeightRequest="90"
+                        Placeholder="Akademik hedefin"
+                        Text="{Binding AcademicGoal}" />
+                    <Border Style="{StaticResource UniFlowFilterShell}">
+                        <Picker
+                            ItemDisplayBinding="{Binding Label}"
+                            ItemsSource="{Binding PersonalityOptions}"
+                            SelectedItem="{Binding SelectedPersonality}"
+                            Title="Motivasyon tarzı" />
+                    </Border>
+                    <Entry
+                        Keyboard="Numeric"
+                        Placeholder="Günlük çalışma hedefi (dakika)"
+                        Text="{Binding DailyStudyTargetMinutes}" />
+                </VerticalStackLayout>
+            </Border>
 
             <Label
                 Text="{Binding StatusMessage}"
-                TextColor="{AppThemeBinding Light=#C62828,
-                                            Dark=#FF8A80}" />
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                TextColor="{AppThemeBinding Light=#C62828, Dark=#FF8A80}" />
+            <ActivityIndicator
+                HorizontalOptions="Center"
+                Color="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}" />
 
             <Button
+                Style="{StaticResource UniFlowPrimaryButton}"
                 Command="{Binding SaveCommand}"
                 Text="Kaydet ve devam et" />
         </VerticalStackLayout>

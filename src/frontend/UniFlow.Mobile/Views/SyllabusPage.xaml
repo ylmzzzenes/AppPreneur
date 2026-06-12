@@ -12,6 +12,11 @@
             <VerticalStackLayout Padding="24,16,24,96" Spacing="20">
                 <!-- Başlık -->
                 <VerticalStackLayout Spacing="6">
+                    <Label
+                        FontFamily="OpenSansSemibold"
+                        FontSize="13"
+                        Text="Adım 1 / 2 · Tarama"
+                        TextColor="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}" />
                     <Label Style="{StaticResource UniFlowPageTitle}" Text="Müfredat" />
                     <Label
                         Style="{StaticResource UniFlowPageSubtitle}"
@@ -234,6 +239,7 @@
                 FontFamily="OpenSansSemibold"
                 FontSize="16"
                 HeightRequest="56"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                 MinimumHeightRequest="56"
                 Text="Tara ve önizle"
                 TextColor="White">

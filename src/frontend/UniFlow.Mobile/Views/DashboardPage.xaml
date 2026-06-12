@@ -118,12 +118,19 @@
                                 <Label
                                     FontFamily="OpenSansRegular"
                                     FontSize="14"
+                                    IsVisible="{Binding HasWeeklySummary}"
                                     LineBreakMode="WordWrap"
                                     Text="{Binding WeeklySummaryText}"
                                     TextColor="{AppThemeBinding Light={StaticResource SlateHeader}, Dark={StaticResource White}}" />
                                 <Label
                                     Style="{StaticResource UniFlowMeta}"
+                                    IsVisible="{Binding HasWeeklySummary}"
                                     Text="{Binding WeeklyNextFocus, StringFormat='Odak: {0}'}" />
+                                <Label
+                                    FontSize="13"
+                                    IsVisible="{Binding ShowWeeklyPlaceholder}"
+                                    Text="Haftalık özet henüz yüklenmedi. Yenile'ye dokunun."
+                                    TextColor="{AppThemeBinding Light={StaticResource SlateSubtitle}, Dark={StaticResource SlateSubtitleDark}}" />
                                 <Label
                                     FontSize="13"
                                     IsVisible="{Binding HasWeeklySummaryError}"
@@ -231,6 +238,23 @@
                     </VerticalStackLayout>
                 </ScrollView>
             </RefreshView>
+        </Grid>
+
+        <Grid
+            BackgroundColor="#80000000"
+            InputTransparent="False"
+            IsVisible="{Binding ShowInitialLoading}"
+            ZIndex="50">
+            <VerticalStackLayout HorizontalOptions="Center" Spacing="12" VerticalOptions="Center">
+                <ActivityIndicator
+                    Color="{AppThemeBinding Light={StaticResource IndigoBrand}, Dark={StaticResource IndigoBrandDark}}"
+                    IsRunning="True" />
+                <Label
+                    FontFamily="OpenSansRegular"
+                    FontSize="14"
+                    Text="Bugün yükleniyor…"
+                    TextColor="White" />
+            </VerticalStackLayout>
         </Grid>
 
         <Border
