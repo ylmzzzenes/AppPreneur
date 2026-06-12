@@ -79,6 +79,18 @@ public sealed class SyllabusParsingService : ISyllabusParsingService
             return parseResult;
         }
 
+        if (parseResult.Data is { Count: 0 })
+        {
+            var fallback = SyllabusContentTaskExtractor.ExtractContentTasks(syllabusText);
+            if (fallback.Count > 0)
+            {
+                _logger.LogInformation(
+                    "Syllabus AI returned no tasks; extracted {Count} tasks from course objective/content.",
+                    fallback.Count);
+                return Result<IReadOnlyList<SyllabusTaskDraft>>.Success(fallback);
+            }
+        }
+
         return parseResult;
     }
 

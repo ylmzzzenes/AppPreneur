@@ -57,6 +57,8 @@ public sealed class HeuristicSyllabusParsingService : ISyllabusParsingService
         }
 
         var drafts = new List<SyllabusTaskDraft>();
+        drafts.AddRange(SyllabusContentTaskExtractor.ExtractContentTasks(syllabusText));
+
         foreach (var line in syllabusText.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
         {
             var trimmed = line.Trim();
@@ -83,7 +85,12 @@ public sealed class HeuristicSyllabusParsingService : ISyllabusParsingService
             });
         }
 
-        return Task.FromResult(Result<IReadOnlyList<SyllabusTaskDraft>>.Success(drafts));
+        var deduped = drafts
+            .GroupBy(d => d.Title.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToList();
+
+        return Task.FromResult(Result<IReadOnlyList<SyllabusTaskDraft>>.Success(deduped));
     }
 
     private static string InferCategory(string line)

@@ -61,6 +61,37 @@ public sealed class SyllabusParsingServiceTests
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().ContainSingle(t => t.Title == "Final Exam");
     }
+
+    [Fact]
+    public async Task ParseTasksFromSyllabusTextAsync_EmptyAiArray_FallsBackToContentExtractor()
+    {
+        var aiProvider = Substitute.For<IAiProvider>();
+        aiProvider.GenerateTextAsync(Arg.Any<AiTextRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new AiTextResponse
+            {
+                Content = "[]",
+                Provider = AiProviders.Gemini,
+                Model = "gemini-2.5-flash",
+            });
+
+        var service = new SyllabusParsingService(
+            aiProvider,
+            Microsoft.Extensions.Options.Options.Create(new AiOptions()),
+            NullLogger<SyllabusParsingService>.Instance);
+
+        const string syllabus = """
+            Dersin Amacı
+            Öğrencilere matematiksel becerilerin kazandırılması.
+            Dersin İçeriği
+            Sayılar sınıflandırmasını yapabilmek
+            """;
+
+        var result = await service.ParseTasksFromSyllabusTextAsync(syllabus);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Should().NotBeEmpty();
+        result.Data!.Should().Contain(t => t.Title.Contains("Sayılar", StringComparison.OrdinalIgnoreCase));
+    }
 }
 
 public sealed class SyllabusParsingServiceResolverTests
@@ -154,6 +185,7 @@ public sealed class SyllabusParsingServiceResolverTests
         return new SyllabusParsingServiceResolver(
             Microsoft.Extensions.Options.Options.Create(aiOptions),
             new FakeHostEnvironment(environment),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<SyllabusParsingServiceResolver>.Instance,
             aiParsing,
             new HeuristicSyllabusParsingService());
     }

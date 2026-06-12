@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Ai;
@@ -14,6 +15,7 @@ namespace UniFlow.Business.Syllabus;
 public sealed class SyllabusParsingServiceResolver(
     IOptions<AiOptions> aiOptions,
     IHostEnvironment hostEnvironment,
+    ILogger<SyllabusParsingServiceResolver> logger,
     SyllabusParsingService aiParsing,
     HeuristicSyllabusParsingService heuristicParsing) : ISyllabusParsingService
 {
@@ -37,6 +39,9 @@ public sealed class SyllabusParsingServiceResolver(
         {
             if (hostEnvironment.IsDevelopment() || hostEnvironment.IsEnvironment("Testing"))
             {
+                logger.LogDebug(
+                    "Syllabus parsing: no API key configured — using heuristic parser instead of live {Provider} calls.",
+                    ai.Provider);
                 return heuristicParsing;
             }
         }
