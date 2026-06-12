@@ -4,5 +4,8 @@ namespace UniFlow.Business.Abstractions;
 
 public interface IChatService
 {
-    Task<Result<string>> ReplyAsync(string userMessage, CancellationToken cancellationToken = default);
+    Task<Result<string>> ReplyAsync(
+        long userId,
+        string userMessage,
+        CancellationToken cancellationToken = default);
 }

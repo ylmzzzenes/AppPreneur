@@ -27,4 +27,9 @@ public sealed class AiOptions
     public bool EnableFallback { get; set; } = true;
 
     public bool LogMetadataOnly { get; set; } = true;
+
+    /// <summary>
+    /// Optional override for chat system prompt. When empty, embedded chat-sarkastik-dahi.md is used.
+    /// </summary>
+    public string ChatSystemPrompt { get; set; } = string.Empty;
 }

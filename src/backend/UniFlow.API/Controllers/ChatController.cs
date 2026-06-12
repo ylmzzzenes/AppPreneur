@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using UniFlow.API.Configuration;
+using UniFlow.API.Infrastructure;
 using UniFlow.API.Contracts;
 using UniFlow.Business.Abstractions;
 using UniFlow.Business.Contracts.Chat;
@@ -20,7 +21,8 @@ public sealed class ChatController(IChatService chatService) : ControllerBase
     [ProducesResponseType(typeof(RateLimitResponse), StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Post([FromBody] ChatRequest request, CancellationToken cancellationToken)
     {
-        var result = await chatService.ReplyAsync(request.Message, cancellationToken).ConfigureAwait(false);
+        var userId = HttpUser.GetUserId(User);
+        var result = await chatService.ReplyAsync(userId, request.Message, cancellationToken).ConfigureAwait(false);
         // Always 200 + Result envelope — some mobile HTTP stacks drop 400 response bodies.
         return Ok(result);
     }
