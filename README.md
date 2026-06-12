@@ -1,270 +1,295 @@
 # UniFlow (AppPreneur)
 
-**Üniversite öğrencileri için AI destekli akademik planlama** — müfredat tarama, günlük odak (Big 3), ders/görev yönetimi ve kişiselleştirilmiş dashboard mesajları.
+**AI-powered academic planning for university students** — scan syllabi into tasks, prioritize your day with Big 3, manage courses, and get personalized AI coaching from a .NET MAUI app backed by ASP.NET Core 8.
+
+UniFlow helps students turn messy syllabi into actionable tasks, stay focused on what matters today, and interact with an AI assistant that knows their courses and deadlines.
+
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-8-512BD4?logo=dotnet&logoColor=white)
+![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-Android-512BD4?logo=dotnet&logoColor=white)
+![EF Core](https://img.shields.io/badge/EF%20Core-8-512BD4?logo=dotnet&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-Auth-000000?logo=jsonwebtokens&logoColor=white)
+![Gemini](https://img.shields.io/badge/Gemini-API-4285F4?logo=google&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-126%20passing-success)
+
+| Area | Stack |
+| --- | --- |
+| Backend | ASP.NET Core 8, EF Core 8, FluentValidation, JWT |
+| Mobile | .NET MAUI (`net8.0-android`), MVVM, SecureStorage |
+| Database | PostgreSQL (Docker) · SQL Server LocalDB (dev fallback) |
+| AI | Gemini · OpenAI-compatible (OpenRouter, Groq) · Fake (dev/test) |
+| OCR | Stub · Gemini multimodal · Azure · Tesseract |
+| Tests | **126** automated tests (82 Business + 44 API) |
+
+---
+
+## Table of contents
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Architecture](#architecture)
+- [AI features](#ai-features)
+- [Requirements](#requirements)
+- [Setup](#setup)
+  - [Docker (recommended)](#setup--docker-recommended)
+  - [LocalDB / dotnet run](#setup--localdb--dotnet-run)
+  - [Mobile app](#setup--mobile-app)
+- [Demo flow](#demo-flow)
+- [Configuration](#configuration)
+- [AI providers](#ai-providers)
+- [API reference](#api-reference)
+- [Tests](#tests)
+- [Security](#security)
+- [PostgreSQL migrations](#postgresql-migrations)
+- [Project structure](#project-structure)
+- [Documentation](#documentation)
+- [GitHub About](#github-about)
+
+---
+
+## Features
+
+### Identity and profile
+
+- JWT register / login
+- Onboarding: display name, major, goals, personality vibe
+- Profile read and update
+
+### Academic content
+
+- **Syllabus:** scan PDF/image → preview → confirm → course + tasks
+- **Courses:** full CRUD with per-user isolation
+- **Tasks:** full CRUD, today / upcoming / all lists, status (Pending · Done · Missed)
+
+### Dashboard and AI
+
+- **Today:** Big 3 priorities, stats, personalized daily message
+- **Weekly summary:** auto-load on dashboard + manual refresh
+- **Study plan:** AI-generated multi-day plan
+- **Task feedback:** AI dialog after status change
+- **Chat:** personality-aware assistant with course/task context
+
+### Mobile tabs
+
+| Tab | Screen | Description |
+| --- | --- | --- |
+| Bugün | Dashboard | Big 3, weekly summary, study plan entry |
+| Görevler | Tasks | Filtered task list and status actions |
+| Dersler | Courses | Course CRUD |
+| Sohbet | Chat | AI chat assistant |
+| Müfredat | Syllabus | Scan → preview → confirm flow |
+
+---
+
+## Screenshots
+
+> Place PNG files under [`docs/screenshots/`](docs/screenshots/) (see [capture guide](docs/screenshots/README.md)). Until images are added, GitHub shows broken image links — capture from Android emulator after a demo run.
 
 | | |
 | --- | --- |
-| **Backend** | ASP.NET Core 8 · EF Core 8 |
-| **Mobile** | .NET MAUI (`net8.0-android`) |
-| **Veritabanı** | PostgreSQL (Docker) · SQL Server LocalDB (dev fallback) |
-| **AI** | Gemini · OpenAI-compatible (OpenRouter, Groq) · Fake (dev/test) |
-| **Testler** | 116 otomatik test |
+| **Login** | **Onboarding** |
+| ![Login](docs/screenshots/01-login.png) | ![Onboarding](docs/screenshots/03-onboarding.png) |
+| **Dashboard** | **Tasks** |
+| ![Dashboard](docs/screenshots/04-dashboard.png) | ![Tasks](docs/screenshots/05-tasks.png) |
+| **Courses** | **Chat** |
+| ![Courses](docs/screenshots/06-courses.png) | ![Chat](docs/screenshots/07-chat.png) |
+| **Syllabus scan** | **Study plan** |
+| ![Syllabus scan](docs/screenshots/08-syllabus-scan.png) | ![Study plan](docs/screenshots/10-study-plan.png) |
+| **Weekly summary** | |
+| ![Weekly summary](docs/screenshots/11-weekly-summary.png) | |
 
 ---
 
-## İçindekiler
+## Architecture
 
-- [Özellikler](#özellikler)
-- [Mimari](#mimari)
-- [Gereksinimler](#gereksinimler)
-- [Hızlı başlangıç](#hızlı-başlangıç)
-- [Mobile uygulama](#mobile-uygulama)
-- [Demo akışı](#demo-akışı-sunum--teslim)
-- [Yapılandırma](#yapılandırma)
-- [AI provider kurulumu](#ai-provider-kurulumu)
-- [API özeti](#api-özeti)
-- [Testler](#testler)
-- [Güvenlik](#güvenlik)
-- [PostgreSQL migration notu](#postgresql-migration-notu)
-- [Proje yapısı](#proje-yapısı)
-- [Dokümantasyon](#dokümantasyon)
+Layered backend with a thin API, business services, EF Core data access, and a MAUI client that talks to the API over JWT-authenticated HTTP.
 
----
+**Full diagram:** [docs/architecture.md](docs/architecture.md)
 
-## Özellikler
-
-### Kimlik ve profil
-- JWT ile kayıt / giriş
-- Onboarding: görünen ad, bölüm, hedefler, kişilik tonu
-- Profil görüntüleme ve güncelleme
-
-### Akademik içerik
-- **Müfredat:** PDF/görüntü tara → önizle → onayla → ders + görevler oluşur
-- **Dersler:** tam CRUD
-- **Görevler:** tam CRUD, bugün / yaklaşan / tümü listesi, durum (Bekliyor · Tamamlandı · Kaçırıldı)
-
-### Dashboard ve AI
-- **Bugün:** Big 3, istatistikler, kişiselleştirilmiş günlük mesaj
-- **Haftalık özet:** otomatik yükleme + yenile
-- **Çalışma planı:** AI ile N günlük plan
-- **Görev geri bildirimi:** durum değişiminden sonra AI dialog
-- **Sohbet:** kişilik tonlu AI chat
-
-### Mobile ekranlar
-
-| Tab | Ekran | Açıklama |
+| Layer | Project | Responsibility |
 | --- | --- | --- |
-| Bugün | Dashboard | Big 3, haftalık özet, çalışma planı |
-| Görevler | Tasks | Filtreli tam görev listesi |
-| Dersler | Courses | Ders CRUD |
-| Sohbet | Chat | AI sohbet |
-| Müfredat | Syllabus | Tarama ve onay |
-
----
-
-## Mimari
-
-```mermaid
-flowchart LR
-    subgraph Mobile[".NET MAUI"]
-        App[UniFlow.Mobile]
-    end
-
-    subgraph API["UniFlow.API"]
-        Auth[Auth / JWT]
-        CRUD[Courses · Tasks]
-        Syl[Syllabus · OCR]
-        Dash[Dashboard]
-        AI[AiController]
-    end
-
-    subgraph Business["UniFlow.Business"]
-        Router[AiProviderRouter]
-        Services[Domain Services]
-    end
-
-    subgraph Data["UniFlow.DataAccess"]
-        EF[EF Core]
-        DB[(PostgreSQL / SQL Server)]
-    end
-
-    App -->|HTTPS + JWT| API
-    API --> Business
-    Business --> Data
-    Syl --> OCR[OCR Stub / Azure / Tesseract]
-    AI --> Router
-    Router --> Gemini[Gemini API]
-    Router --> OpenAI[OpenAI-compatible]
-    Router --> Fake[Fake provider]
-    EF --> DB
-```
-
-**Katmanlar**
-
-| Katman | Proje | Sorumluluk |
-| --- | --- | --- |
-| API | `UniFlow.API` | HTTP, auth, rate limit, health |
+| API | `UniFlow.API` | HTTP, auth, rate limits, health, Swagger |
 | Business | `UniFlow.Business` | Domain logic, AI, OCR, validation |
 | Data | `UniFlow.DataAccess` | EF Core, queries, migrations |
-| Entity | `UniFlow.Entity` | Modeller, result tipleri |
-| Mobile | `UniFlow.Mobile` | MAUI UI, ApiClient |
+| Entity | `UniFlow.Entity` | Models, enums, result types |
+| Mobile | `UniFlow.Mobile` | MAUI UI, ApiClient, MVVM |
 
 ---
 
-## Gereksinimler
+## AI features
 
-| Araç | Sürüm | Not |
+| Feature | Endpoint | Backend service | Provider | Mobile screen |
+| --- | --- | --- | --- | --- |
+| Daily message | `GET /api/v1/dashboard/today` | `PersonalizedDailyMessageService` | Fake / template fallback; Gemini when configured | Dashboard (Bugün) |
+| Weekly summary | `GET /api/v1/ai/weekly-summary` | `WeeklySummaryService` | `AiProviderRouter` → Gemini / OpenAI-compatible / Fake | Dashboard (card + Yenile) |
+| Study plan | `POST /api/v1/ai/study-plan` | `StudyPlanService` | `AiProviderRouter` | StudyPlanPage |
+| Task feedback | `POST /api/v1/ai/task-feedback` | `TaskFeedbackService` | `AiProviderRouter` | Dashboard / Tasks (dialog) |
+| Chat | `POST /api/v1/Chat` | `ChatService` + `ChatUserContextBuilder` | `AiProviderRouter` | ChatPage |
+| Syllabus parse | `POST /api/v1/syllabus/scan` | `SyllabusParsingService` (+ heuristic fallback) | `AiProviderRouter` | SyllabusPage → Preview |
+| Syllabus OCR | `POST /api/v1/syllabus/scan` | `GeminiOcrService` / Stub / Azure / Tesseract | Gemini (dev default) or configured OCR | SyllabusPage |
+
+Production blocks the Fake AI provider at startup. OCR provider is configured separately under `UniFlow:Ocr`.
+
+---
+
+## Requirements
+
+| Tool | Version | Notes |
 | --- | --- | --- |
 | [.NET SDK](https://dotnet.microsoft.com/download) | 8.x | Backend + mobile build |
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Güncel | PostgreSQL + API (önerilen) |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Current | PostgreSQL + API (recommended) |
 | Visual Studio 2022 | 17.8+ | MAUI + Android emulator |
 | SQL Server LocalDB | — | Windows `dotnet run` fallback |
 
 ---
 
-## Hızlı başlangıç
+## Setup
 
-### Seçenek A — Docker (önerilen)
+### Setup — Docker (recommended)
 
-PostgreSQL + API tek komutla. [Docker Desktop](https://www.docker.com/products/docker-desktop/) açık olmalı.
+PostgreSQL and API in one command. [Docker Desktop](https://www.docker.com/products/docker-desktop/) must be running.
 
 ```powershell
-# 1. Ortam dosyası
-cd c:\Users\enesy\Desktop\AppPreneur   # proje kökü
+# From repository root
 Copy-Item .env.example .env
-# .env içinde JWT_KEY en az 32 karakter olsun
+# Set JWT_KEY to at least 32 characters in .env
 
-# 2. Doğrula ve başlat
 docker compose config
 docker compose up --build
 
-# 3. Sağlık kontrolü
+# Health check
 curl http://localhost:5000/health
 ```
 
-| Endpoint | URL |
+| Service | URL |
 | --- | --- |
-| API | `http://localhost:5000` |
-| Swagger | `http://localhost:5000/swagger` |
-| Health | `http://localhost:5000/health` |
-| PostgreSQL | `localhost:5432` |
+| API | http://localhost:5000 |
+| Swagger | http://localhost:5000/swagger |
+| Health | http://localhost:5000/health |
+| PostgreSQL | localhost:5432 |
 
-Development ortamında migration'lar API startup'ta **otomatik** uygulanır.
+Migrations apply automatically on API startup in Development.
 
 ---
 
-### Seçenek B — Local `dotnet run` (SQL Server LocalDB)
+### Setup — LocalDB / dotnet run
 
-Docker olmadan en hızlı demo. AI için `Fake` provider yeterli.
+Fastest local demo without Docker. Use **Fake** AI provider — no API key required.
 
 ```powershell
 cd src\backend\UniFlow.API
 dotnet user-secrets set "Jwt:Key" "your-secret-at-least-32-characters-long"
 dotnet user-secrets set "Ai:Provider" "Fake"
 dotnet user-secrets set "Ai:Model" "fake-model"
-dotnet run
+dotnet run --launch-profile http
 ```
 
-| Endpoint | URL |
+| Service | URL |
 | --- | --- |
-| Swagger | `http://localhost:5087/swagger` |
-| Health | `http://localhost:5087/health` |
+| Swagger | http://localhost:5087/swagger |
+| Health | http://localhost:5087/health |
 
-Varsayılan: `Database:Provider = SqlServer`, LocalDB (`appsettings.Development.json`).
+Default: `Database:Provider = SqlServer` with LocalDB (`appsettings.Development.json`).
 
----
-
-### Seçenek C — `dotnet run` + yerel PostgreSQL
+**Optional — local PostgreSQL instead of LocalDB:**
 
 ```powershell
-cd src\backend\UniFlow.API
-dotnet user-secrets set "Jwt:Key" "your-secret-at-least-32-characters-long"
 dotnet user-secrets set "Database:Provider" "PostgreSql"
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=uniflow;Username=uniflow;Password=uniflow_dev_password"
-dotnet run
+dotnet run --launch-profile http
 ```
 
 ---
 
-## Mobile uygulama
+### Setup — Mobile app
 
-API adresi `UNIFLOW_API_BASE_URL` ile ayarlanır (`ApiConstants.cs`). Trailing slash opsiyonel.
+The mobile client reads the API base URL from `UNIFLOW_API_BASE_URL` (`ApiConstants.cs`). Trailing slash is optional.
 
-### Emulator / cihaz URL tablosu
+**1. Choose the URL for your backend**
 
-| Senaryo | Base URL |
+| Scenario | Base URL |
 | --- | --- |
-| Android emulator + **Docker API** | `http://10.0.2.2:5000/` |
-| Android emulator + **`dotnet run`** | `http://10.0.2.2:5087/` |
-| iOS simulator / Windows MAUI | `http://127.0.0.1:5000/` veya `5087/` |
-| Fiziksel cihaz | `http://<LAN-IP>:5000/` — API'yi tüm arayüzlerde dinlet |
+| Android emulator + Docker API | `http://10.0.2.2:5000/` |
+| Android emulator + `dotnet run` | `http://10.0.2.2:5087/` |
+| iOS simulator / Windows MAUI | `http://127.0.0.1:5000/` or `5087/` |
+| Physical device | `http://<LAN-IP>:5000/` (API must listen on all interfaces) |
 
-### Build ve çalıştırma
+**2. Build**
 
 ```powershell
-# Docker API kullanıyorsan
+# Docker API
 $env:UNIFLOW_API_BASE_URL = "http://10.0.2.2:5000/"
 
-# Local dotnet run kullanıyorsan
+# Local dotnet run
 # $env:UNIFLOW_API_BASE_URL = "http://10.0.2.2:5087/"
 
 dotnet build src/frontend/UniFlow.Mobile/UniFlow.Mobile.csproj -f net8.0-android
 ```
 
-Visual Studio'dan Android emulator ile F5 de kullanılabilir; URL'yi build öncesi ortam değişkeni olarak set et.
+Run from Visual Studio with an Android emulator (F5). Set the environment variable before build/run.
 
-> **Not:** Mobile uygulama dummy data kullanmaz — tüm veriler canlı API'den gelir.
-
----
-
-## Demo akışı (sunum / teslim)
-
-Yeni geliştirici onboarding veya canlı sunum için bu sırayı izle.
-
-| # | Adım | Nerede |
-| --- | --- | --- |
-| 1 | API'yi başlat | Docker veya `dotnet run` |
-| 2 | Mobile API URL ayarla | `UNIFLOW_API_BASE_URL` |
-| 3 | Kayıt ol | Login ekranı |
-| 4 | Onboarding doldur | İlk giriş sonrası |
-| 5 | Ders oluştur | Dersler → + Yeni ders |
-| 6 | Görev oluştur | Görevler → + Yeni görev |
-| 7 | Müfredat tara → onayla | Müfredat → scan → preview → confirm |
-| 8 | Big 3 gör | Bugün tab |
-| 9 | Görev durumu değiştir | Tamamlandı / Bekliyor / Kaçırıldı |
-| 10 | AI görev geri bildirimi | Status sonrası dialog |
-| 11 | Çalışma planı oluştur | Bugün → Çalışma Planı Oluştur |
-| 12 | Haftalık özet | Bugün tab — otomatik yüklenir; Yenile ile tekrar çek |
-
-**Minimum demo ortamı:** Seçenek B + `Ai:Provider=Fake` + OCR `Stub` — gerçek API key gerekmez.
+> The mobile app uses **live API data only** — no dummy data in ViewModels.
 
 ---
 
-## Yapılandırma
+## Demo flow
 
-### Ortam değişkenleri
+Use this sequence for onboarding demos or portfolio walkthroughs.
 
-| Değişken | Amaç |
+### Phase 1 — Environment
+
+1. Start API (Docker **or** LocalDB + Fake AI).
+2. Set `UNIFLOW_API_BASE_URL` for the emulator.
+3. Build and launch the MAUI app.
+
+### Phase 2 — Account
+
+4. **Register** on the login screen.
+5. Complete **onboarding** (major, goals, personality).
+
+### Phase 3 — Core data
+
+6. Create a **course** (Dersler → +).
+7. Create a **task** manually (Görevler → +).
+8. **Scan syllabus** → preview → confirm (Müfredat).
+
+### Phase 4 — AI experience
+
+9. Open **Dashboard** — see Big 3 and daily message.
+10. Change a task **status** — trigger AI feedback dialog.
+11. Generate a **study plan** (Dashboard → Çalışma planı).
+12. Refresh **weekly summary** on Dashboard.
+
+**Minimum demo (no API keys):** LocalDB setup + `Ai:Provider=Fake` + OCR `Stub` (text-only syllabus) or `Gemini` OCR if you have a Gemini key.
+
+---
+
+## Configuration
+
+### Environment variables
+
+| Variable | Purpose |
 | --- | --- |
-| `JWT_KEY` | JWT imza anahtarı (min 32 karakter) → `Jwt:Key` |
-| `ConnectionStrings__DefaultConnection` | Veritabanı bağlantısı |
-| `Database__Provider` | `SqlServer` veya `PostgreSql` |
-| `AI_API_KEY` | Birincil AI key → `Ai:ApiKey` |
-| `GEMINI_API_KEY` | Legacy fallback → `Ai:ApiKey` (boşsa) |
+| `JWT_KEY` | JWT signing key (min 32 chars) → `Jwt:Key` |
+| `ConnectionStrings__DefaultConnection` | Database connection string |
+| `Database__Provider` | `SqlServer` or `PostgreSql` |
+| `AI_API_KEY` / `GEMINI_API_KEY` | Fallback for `Ai:ApiKey` |
 | `Ai__Provider` | `Gemini` · `OpenAiCompatible` · `Fake` |
 | `Ai__ApiKey` | AI provider API key |
 | `Ai__BaseUrl` | OpenAI-compatible base URL |
-| `Ai__Model` | Model adı |
-| `Ai__TimeoutSeconds` | HTTP timeout (saniye) |
-| `Ai__RetryCount` | Retry sayısı |
-| `Ai__EnableFallback` | Key yokken local fallback (`true`/`false`) |
-| `AZURE_DOCUMENT_INTELLIGENCE_KEY` | Azure OCR key |
+| `Ai__Model` | Model name (e.g. `gemini-2.5-flash`) |
+| `Ai__TimeoutSeconds` | HTTP timeout |
+| `Ai__RetryCount` | Retry count |
+| `Ai__EnableFallback` | Local fallback when key missing (dev) |
+| `AZURE_DOCUMENT_INTELLIGENCE_KEY` | Azure OCR |
 | `UNIFLOW_API_BASE_URL` | Mobile API base URL |
 | `POSTGRES_*` | Docker Compose PostgreSQL (`.env.example`) |
 
-Tam şablon: `src/backend/UniFlow.API/appsettings.example.json`
+Full template: [`src/backend/UniFlow.API/appsettings.example.json`](src/backend/UniFlow.API/appsettings.example.json)
 
-### Secret yönetimi
+### Secrets (local development)
 
 ```powershell
 cd src\backend\UniFlow.API
@@ -272,60 +297,63 @@ dotnet user-secrets set "Jwt:Key" "your-secret-at-least-32-characters-long"
 dotnet user-secrets list
 ```
 
-- `.env` dosyasını **commit etme** (`.gitignore`'da)
-- `appsettings.json` boş secret ile gelir — key'ler user-secrets veya env ile set edilir
+- Never commit `.env` (listed in `.gitignore`).
+- `appsettings.json` ships with empty secrets — use user-secrets or environment variables.
 
 ---
 
-## AI provider kurulumu
+## AI providers
 
-Birincil yapılandırma **`Ai` section** üzerinden yapılır. Legacy `UniFlow:Gemini` hâlâ bind edilir; `GEMINI_API_KEY` ve `AI_API_KEY` boş `Ai:ApiKey`'i doldurur.
+Primary configuration is the **`Ai`** section. Legacy `UniFlow:Gemini` and env vars `GEMINI_API_KEY` / `AI_API_KEY` still bind to `Ai:ApiKey`.
 
-API başlarken **`UniFlow.Ai.Configuration`** logger'ında güvenli bir özet görünür (key asla loglanmaz): Environment, Provider, Model, `ApiKeyConfigured`, `EnableFallback`, `EffectiveBehavior`. Development'ta key yoksa Debug seviyesinde ek yönlendirme mesajı yazılır.
+On startup, **`UniFlow.Ai.Configuration`** logs a safe summary (provider, model, key configured — never the raw key).
 
-| Provider | Kullanım | Production |
+| Provider | Use case | Production |
 | --- | --- | --- |
-| `Fake` | Dev / CI — deterministik yanıt, heuristic müfredat parse | **Yasak** (startup fail-fast) |
-| `Gemini` | Google Gemini REST API | ApiKey zorunlu |
-| `OpenAiCompatible` | OpenRouter, Groq, OpenAI | ApiKey + BaseUrl zorunlu |
+| `Fake` | Dev / CI — deterministic responses, heuristic syllabus parse | **Blocked** (fail-fast) |
+| `Gemini` | Google Gemini REST API | ApiKey required |
+| `OpenAiCompatible` | OpenRouter, Groq, OpenAI | ApiKey + BaseUrl required |
 
-### Fake (local demo — key gerekmez)
+<details>
+<summary><strong>Fake (local demo)</strong></summary>
 
 ```powershell
 dotnet user-secrets set "Ai:Provider" "Fake"
 dotnet user-secrets set "Ai:Model" "fake-model"
 ```
 
-Docker (`.env`):
+Docker `.env`:
 
 ```env
 Ai__Provider=Fake
 Ai__Model=fake-model
 ```
 
-### Gemini
+</details>
 
-**dotnet user-secrets:**
+<details>
+<summary><strong>Gemini</strong></summary>
 
 ```powershell
 dotnet user-secrets set "Ai:Provider" "Gemini"
 dotnet user-secrets set "Ai:Model" "gemini-2.5-flash"
 dotnet user-secrets set "Ai:ApiKey" "YOUR_AI_STUDIO_KEY"
-# alternatif: $env:GEMINI_API_KEY = "AIzaSy..."
 ```
 
-**Docker (`.env` — `Copy-Item .env.example .env` sonrası):**
+Docker `.env`:
 
 ```env
 Ai__Provider=Gemini
 Ai__Model=gemini-2.5-flash
 Ai__ApiKey=YOUR_AI_STUDIO_KEY
-# veya legacy: GEMINI_API_KEY=YOUR_AI_STUDIO_KEY
 ```
 
-Key yoksa Development'ta uygulama açılır; müfredat/günlük mesaj fallback kullanır, sohbet ve çalışma planı `AI_CONFIG` döner — startup logunda `EffectiveBehavior` bunu açıklar.
+</details>
 
-### OpenRouter
+<details>
+<summary><strong>OpenRouter / Groq</strong></summary>
+
+OpenRouter:
 
 ```powershell
 dotnet user-secrets set "Ai:Provider" "OpenAiCompatible"
@@ -334,139 +362,159 @@ dotnet user-secrets set "Ai:Model" "meta-llama/llama-3.2-3b-instruct:free"
 dotnet user-secrets set "Ai:ApiKey" "YOUR_OPENROUTER_KEY"
 ```
 
-Docker `.env`:
-
-```env
-Ai__Provider=OpenAiCompatible
-Ai__BaseUrl=https://openrouter.ai/api/v1
-Ai__Model=meta-llama/llama-3.2-3b-instruct:free
-Ai__ApiKey=YOUR_OPENROUTER_KEY
-```
-
-### Groq
+Groq:
 
 ```powershell
-dotnet user-secrets set "Ai:Provider" "OpenAiCompatible"
 dotnet user-secrets set "Ai:BaseUrl" "https://api.groq.com/openai/v1"
 dotnet user-secrets set "Ai:Model" "llama-3.1-8b-instant"
-dotnet user-secrets set "Ai:ApiKey" "YOUR_GROQ_KEY"
 ```
 
-Docker `.env`:
+</details>
 
-```env
-Ai__Provider=OpenAiCompatible
-Ai__BaseUrl=https://api.groq.com/openai/v1
-Ai__Model=llama-3.1-8b-instant
-Ai__ApiKey=YOUR_GROQ_KEY
-```
-
-Detaylı provider dokümantasyonu: [Backend README](src/backend/README.md)
+More detail: [Backend README](src/backend/README.md)
 
 ---
 
-## API özeti
+## API reference
 
-Tüm korumalı endpoint'ler `Authorization: Bearer <token>` gerektirir.
+Protected endpoints require `Authorization: Bearer <token>`.
 
 ### Auth
-| Method | Route | Açıklama |
-| --- | --- | --- |
-| POST | `/api/v1/auth/register` | Kayıt |
-| POST | `/api/v1/auth/login` | Giriş |
 
-### Kullanıcı
-| Method | Route | Açıklama |
+| Method | Route | Description |
 | --- | --- | --- |
-| GET | `/api/v1/users/me` | Profil |
-| PATCH | `/api/v1/users/me/onboarding` | Onboarding güncelle |
+| POST | `/api/v1/auth/register` | Register |
+| POST | `/api/v1/auth/login` | Login |
+
+### Users
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/v1/users/me` | Profile |
+| PATCH | `/api/v1/users/me/onboarding` | Update onboarding |
 
 ### Dashboard
-| Method | Route | Açıklama |
-| --- | --- | --- |
-| GET | `/api/v1/dashboard/today` | Big 3, stats, günlük mesaj |
 
-### Dersler
-| Method | Route | Açıklama |
+| Method | Route | Description |
 | --- | --- | --- |
-| GET/POST | `/api/v1/courses` | Liste / oluştur |
-| GET/PUT/DELETE | `/api/v1/courses/{id}` | Detay / güncelle / sil |
+| GET | `/api/v1/dashboard/today` | Big 3, stats, daily message |
 
-### Görevler
-| Method | Route | Açıklama |
-| --- | --- | --- |
-| GET | `/api/v1/tasks` | Tüm görevler |
-| GET | `/api/v1/tasks/today` | Bugünkü görevler |
-| GET | `/api/v1/tasks/upcoming` | Yaklaşan görevler |
-| POST/PUT/DELETE | `/api/v1/tasks` … | CRUD |
-| PATCH | `/api/v1/tasks/{id}/status` | Durum güncelle |
+### Courses
 
-### Müfredat
-| Method | Route | Açıklama |
+| Method | Route | Description |
 | --- | --- | --- |
-| POST | `/api/v1/syllabus/scan` | Dosya tara → önizleme oturumu |
-| POST | `/api/v1/syllabus/confirm` | Onayla → ders + görevler |
-| POST | `/api/v1/syllabus/ingest` | Tek adımda ingest |
+| GET / POST | `/api/v1/courses` | List / create |
+| GET / PUT / DELETE | `/api/v1/courses/{id}` | Detail / update / delete |
 
-### AI
-| Method | Route | Açıklama |
-| --- | --- | --- |
-| POST | `/api/v1/ai/study-plan` | Çalışma planı |
-| POST | `/api/v1/ai/task-feedback` | Görev geri bildirimi |
-| GET | `/api/v1/ai/weekly-summary` | Haftalık özet |
-| POST | `/api/v1/chat` | Sohbet |
+### Tasks
 
-### Sistem
-| Method | Route | Açıklama |
+| Method | Route | Description |
 | --- | --- | --- |
-| GET | `/health` | DB connectivity check |
+| GET | `/api/v1/tasks` | All tasks |
+| GET | `/api/v1/tasks/today` | Today's tasks |
+| GET | `/api/v1/tasks/upcoming` | Upcoming tasks |
+| POST / PUT / DELETE | `/api/v1/tasks` … | CRUD |
+| PATCH | `/api/v1/tasks/{id}/status` | Update status |
+
+### Syllabus
+
+| Method | Route | Description |
+| --- | --- | --- |
+| POST | `/api/v1/syllabus/scan` | Scan file → preview session |
+| POST | `/api/v1/syllabus/confirm` | Confirm → course + tasks |
+| POST | `/api/v1/syllabus/ingest` | One-step ingest (legacy) |
+
+### AI and chat
+
+| Method | Route | Description |
+| --- | --- | --- |
+| POST | `/api/v1/ai/study-plan` | Study plan |
+| POST | `/api/v1/ai/task-feedback` | Task feedback |
+| GET | `/api/v1/ai/weekly-summary` | Weekly summary |
+| POST | `/api/v1/Chat` | Chat |
+
+### System
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/health` | Database connectivity check |
 
 ---
 
-## Testler
+## Tests
 
 ```powershell
+# Backend — build and test (126 tests)
 dotnet build src/backend/UniFlow.sln
 dotnet test src/backend/UniFlow.sln
+
+# Run a single project
+dotnet test src/backend/tests/UniFlow.Business.Tests
+dotnet test src/backend/tests/UniFlow.API.Tests
+
+# Mobile — build only (no automated UI tests yet)
 dotnet build src/frontend/UniFlow.Mobile/UniFlow.Mobile.csproj -f net8.0-android
 ```
 
-| Suite | Test sayısı | Ortam |
+| Suite | Tests | Type |
 | --- | --- | --- |
-| `UniFlow.Business.Tests` | 72 | Unit |
-| `UniFlow.API.Tests` | 44 | Integration (SQLite in-memory) |
-| **Toplam** | **116** | `Testing` env, Fake AI |
+| `UniFlow.Business.Tests` | 82 | Unit (AI, syllabus, services, validation) |
+| `UniFlow.API.Tests` | 44 | Integration (SQLite in-memory, `Testing` env) |
+| **Total** | **126** | Fake AI provider in test environment |
 
-Integration testler PostgreSQL veya gerçek AI key gerektirmez.
-
----
-
-## Güvenlik
-
-| Kural | Durum |
-| --- | --- |
-| Secret'lar repoda değil | `appsettings.json` boş; `.env` gitignore'da |
-| API key loglanmaz | Sadece metadata (provider, model, length) |
-| Prompt / raw OCR / raw AI response loglanmaz | `AiRequestLogger` + storage policy |
-| Raw AI DB'ye yazılmaz | `StoreAiRawResponse: false` |
-| Fake provider Production'da engelli | Startup validation fail-fast |
-| Ownership | Task/course/syllabus session kullanıcıya bağlı |
-
-**Production checklist:** `JWT_KEY` · connection string · `Ai:ApiKey` (Fake değilse) · Azure OCR (Production default)
+Integration tests do **not** require PostgreSQL or live AI API keys.
 
 ---
 
-## PostgreSQL migration notu
+## Security
 
-EF migration'lar tarihsel olarak **SQL Server** üzerinde scaffold edildi. Aynı migration geçmişi PostgreSQL'de de kullanılır (Docker dev).
+### Secrets and configuration
 
-| Durum | Ne yapmalı |
+- Repository ships without production secrets; `appsettings.json` uses empty placeholders.
+- `.env` and user-secrets are excluded from version control.
+- JWT signing key must be at least 32 characters; validated at startup.
+
+### Authentication and authorization
+
+- JWT bearer auth on all protected endpoints.
+- User identity from `NameIdentifier` / `sub` claim; services enforce ownership via `GetOwnedAsync` queries.
+- Cross-user access returns **404** (tasks, courses) or **403** (syllabus scan sessions) to reduce enumeration.
+
+### AI and data handling
+
+- API keys are never written to logs — only metadata (provider, model, payload lengths).
+- Raw prompts, OCR text, and AI HTTP bodies are not persisted by default (`StoreRawSourceText`, `StoreAiRawResponse` off).
+- Fake AI provider is rejected in Production at startup validation.
+
+### Upload and abuse controls
+
+- Syllabus uploads: size limit (10 MB), extension and MIME whitelist.
+- Rate limiting on AI endpoints and file upload routes (per-user partition when authenticated).
+
+### Production checklist
+
+| Item | Required |
 | --- | --- |
-| Migration başarılı | `docker compose up` + `/health` yeterli |
-| Provider-specific SQL hatası | SQL Server LocalDB fallback (Seçenek B) veya hatayı raporla |
-| Migration geçmişini silme | **Yapma** — veri kaybı ve ekip uyumsuzluğu |
+| Strong `JWT_KEY` / `Jwt:Key` | Yes |
+| Database connection string | Yes |
+| `Ai:ApiKey` (non-Fake provider) | Yes |
+| `Ai:Provider` ≠ `Fake` | Yes |
+| HTTPS termination | Recommended |
+| OCR provider keys (if not using Stub/Gemini dev defaults) | As needed |
 
-Manuel migration (host'tan, Postgres Docker'da çalışırken):
+---
+
+## PostgreSQL migrations
+
+EF Core migrations were historically scaffolded against **SQL Server**. The same migration history is applied when `Database:Provider=PostgreSql` (Docker dev).
+
+| Situation | Action |
+| --- | --- |
+| Migrations succeed | `docker compose up` + `/health` is enough |
+| Provider-specific SQL error | Use LocalDB fallback or report the issue |
+| Reset migration history | **Do not** — causes data loss and team drift |
+
+Manual update from host (Postgres in Docker):
 
 ```powershell
 $env:Database__Provider = "PostgreSql"
@@ -474,38 +522,57 @@ $env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=u
 dotnet ef database update --project src/backend/UniFlow.DataAccess --startup-project src/backend/UniFlow.API
 ```
 
+See [Backend README](src/backend/README.md) for provider switching details.
+
 ---
 
-## Proje yapısı
+## Project structure
 
 ```
 AppPreneur/
+├── docs/
+│   ├── architecture.md          # System diagram and layer notes
+│   └── screenshots/             # Portfolio screenshots (see README inside)
 ├── src/
 │   ├── backend/
-│   │   ├── UniFlow.API/           # HTTP API, controllers, Dockerfile
-│   │   ├── UniFlow.Business/      # Domain, AI, OCR, validation
-│   │   ├── UniFlow.DataAccess/    # EF Core, migrations, queries
-│   │   ├── UniFlow.Entity/        # Entities, DTOs, results
-│   │   └── tests/                 # Business + API test projeleri
+│   │   ├── UniFlow.API/         # HTTP API, controllers, Dockerfile
+│   │   ├── UniFlow.Business/    # Domain, AI, OCR, validation
+│   │   ├── UniFlow.DataAccess/  # EF Core, migrations, queries
+│   │   ├── UniFlow.Entity/      # Entities, enums, results
+│   │   └── tests/               # Business + API test projects
 │   └── frontend/
-│       └── UniFlow.Mobile/        # .NET MAUI mobile app
-├── docker-compose.yml             # PostgreSQL + API
-├── .env.example                   # Docker env şablonu (→ .env kopyala)
-└── README.md                      # Bu dosya
+│       └── UniFlow.Mobile/      # .NET MAUI mobile app
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## Dokümantasyon
+## Documentation
 
-| Kaynak | İçerik |
+| Resource | Content |
 | --- | --- |
-| [Backend README](src/backend/README.md) | Secret'lar, migration, AI/OCR detay, health |
-| [Teknik PRD](UniFlow%20Teknik%20PRD%20v1.0.md) | Ürün ve teknik gereksinimler |
-| `appsettings.example.json` | Tam config şablonu |
+| [Architecture](docs/architecture.md) | Mermaid diagram, layers, key flows |
+| [Screenshots guide](docs/screenshots/README.md) | Capture and naming conventions |
+| [Backend README](src/backend/README.md) | Secrets, migrations, AI/OCR, health |
+| [Technical PRD](UniFlow%20Teknik%20PRD%20v1.0.md) | Product and technical requirements |
+| `appsettings.example.json` | Full configuration template |
+
+---
+
+## GitHub About
+
+**Suggested repository description:**
+
+> AI-powered academic planning app for university students built with ASP.NET Core 8, .NET MAUI, EF Core, PostgreSQL, JWT and Gemini/OpenAI-compatible providers.
+
+**Suggested topics:**
+
+`dotnet` · `aspnet-core` · `dotnet-maui` · `ef-core` · `postgresql` · `jwt-authentication` · `ai` · `gemini-api` · `openai-compatible` · `mobile-app` · `docker` · `clean-architecture` · `academic-planner`
 
 ---
 
 <p align="center">
-  <sub>UniFlow · AppPreneur · .NET 8 · Built for demo-ready handoff</sub>
+  <sub>UniFlow · AppPreneur · .NET 8 · Demo-ready full stack</sub>
 </p>
