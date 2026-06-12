@@ -204,6 +204,20 @@ public sealed class AiOptionsValidatorTests
         result.FailureMessage.Should().Contain("ApiKey");
     }
 
+    [Fact]
+    public void Gemini_InDevelopment_WithoutApiKey_PassesValidation()
+    {
+        var result = CreateValidator("Development").Validate(null, new AiOptions
+        {
+            Provider = AiProviders.Gemini,
+            Model = "gemini-2.5-flash",
+            ApiKey = "",
+            EnableFallback = true,
+        });
+
+        result.Succeeded.Should().BeTrue();
+    }
+
     private sealed class FakeHostEnvironment(string name) : Microsoft.Extensions.Hosting.IHostEnvironment
     {
         public string EnvironmentName { get; set; } = name;

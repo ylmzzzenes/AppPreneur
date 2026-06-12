@@ -255,6 +255,9 @@ Yeni geliştirici onboarding veya canlı sunum için bu sırayı izle.
 | `Ai__ApiKey` | AI provider API key |
 | `Ai__BaseUrl` | OpenAI-compatible base URL |
 | `Ai__Model` | Model adı |
+| `Ai__TimeoutSeconds` | HTTP timeout (saniye) |
+| `Ai__RetryCount` | Retry sayısı |
+| `Ai__EnableFallback` | Key yokken local fallback (`true`/`false`) |
 | `AZURE_DOCUMENT_INTELLIGENCE_KEY` | Azure OCR key |
 | `UNIFLOW_API_BASE_URL` | Mobile API base URL |
 | `POSTGRES_*` | Docker Compose PostgreSQL (`.env.example`) |
@@ -276,7 +279,9 @@ dotnet user-secrets list
 
 ## AI provider kurulumu
 
-Birincil yapılandırma **`Ai` section** üzerinden yapılır. Legacy `UniFlow:Gemini` hâlâ bind edilir; `GEMINI_API_KEY` boş `Ai:ApiKey`'i doldurur.
+Birincil yapılandırma **`Ai` section** üzerinden yapılır. Legacy `UniFlow:Gemini` hâlâ bind edilir; `GEMINI_API_KEY` ve `AI_API_KEY` boş `Ai:ApiKey`'i doldurur.
+
+API başlarken **`UniFlow.Ai.Configuration`** logger'ında güvenli bir özet görünür (key asla loglanmaz): Environment, Provider, Model, `ApiKeyConfigured`, `EnableFallback`, `EffectiveBehavior`. Development'ta key yoksa Debug seviyesinde ek yönlendirme mesajı yazılır.
 
 | Provider | Kullanım | Production |
 | --- | --- | --- |
@@ -291,14 +296,34 @@ dotnet user-secrets set "Ai:Provider" "Fake"
 dotnet user-secrets set "Ai:Model" "fake-model"
 ```
 
+Docker (`.env`):
+
+```env
+Ai__Provider=Fake
+Ai__Model=fake-model
+```
+
 ### Gemini
+
+**dotnet user-secrets:**
 
 ```powershell
 dotnet user-secrets set "Ai:Provider" "Gemini"
-dotnet user-secrets set "Ai:Model" "gemini-2.0-flash"
-dotnet user-secrets set "Ai:ApiKey" "YOUR_GEMINI_KEY"
-# alternatif: $env:GEMINI_API_KEY = "..."
+dotnet user-secrets set "Ai:Model" "gemini-2.5-flash"
+dotnet user-secrets set "Ai:ApiKey" "YOUR_AI_STUDIO_KEY"
+# alternatif: $env:GEMINI_API_KEY = "AIzaSy..."
 ```
+
+**Docker (`.env` — `Copy-Item .env.example .env` sonrası):**
+
+```env
+Ai__Provider=Gemini
+Ai__Model=gemini-2.5-flash
+Ai__ApiKey=YOUR_AI_STUDIO_KEY
+# veya legacy: GEMINI_API_KEY=YOUR_AI_STUDIO_KEY
+```
+
+Key yoksa Development'ta uygulama açılır; müfredat/günlük mesaj fallback kullanır, sohbet ve çalışma planı `AI_CONFIG` döner — startup logunda `EffectiveBehavior` bunu açıklar.
 
 ### OpenRouter
 
@@ -309,13 +334,31 @@ dotnet user-secrets set "Ai:Model" "meta-llama/llama-3.2-3b-instruct:free"
 dotnet user-secrets set "Ai:ApiKey" "YOUR_OPENROUTER_KEY"
 ```
 
+Docker `.env`:
+
+```env
+Ai__Provider=OpenAiCompatible
+Ai__BaseUrl=https://openrouter.ai/api/v1
+Ai__Model=meta-llama/llama-3.2-3b-instruct:free
+Ai__ApiKey=YOUR_OPENROUTER_KEY
+```
+
 ### Groq
 
 ```powershell
 dotnet user-secrets set "Ai:Provider" "OpenAiCompatible"
 dotnet user-secrets set "Ai:BaseUrl" "https://api.groq.com/openai/v1"
-dotnet user-secrets set "Ai:Model" "openai/gpt-oss-20b"
+dotnet user-secrets set "Ai:Model" "llama-3.1-8b-instant"
 dotnet user-secrets set "Ai:ApiKey" "YOUR_GROQ_KEY"
+```
+
+Docker `.env`:
+
+```env
+Ai__Provider=OpenAiCompatible
+Ai__BaseUrl=https://api.groq.com/openai/v1
+Ai__Model=llama-3.1-8b-instant
+Ai__ApiKey=YOUR_GROQ_KEY
 ```
 
 Detaylı provider dokümantasyonu: [Backend README](src/backend/README.md)

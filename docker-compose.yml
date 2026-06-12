@@ -32,6 +32,14 @@ services:
       Database__Provider: ${DATABASE_PROVIDER:-PostgreSql}
       ConnectionStrings__DefaultConnection: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=uniflow;Username=uniflow;Password=uniflow_dev_password}
       JWT_KEY: ${JWT_KEY:-dev-jwt-secret-for-local-docker-compose-only-32c}
+      Ai__Provider: ${Ai__Provider:-Gemini}
+      Ai__ApiKey: ${Ai__ApiKey:-}
+      Ai__BaseUrl: ${Ai__BaseUrl:-https://api.openai.com/v1}
+      Ai__Model: ${Ai__Model:-gemini-2.5-flash}
+      Ai__TimeoutSeconds: ${Ai__TimeoutSeconds:-30}
+      Ai__RetryCount: ${Ai__RetryCount:-2}
+      Ai__EnableFallback: ${Ai__EnableFallback:-true}
+      AI_API_KEY: ${AI_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     env_file:
       - path: .env

@@ -79,7 +79,7 @@ See `appsettings.example.json` for the full template.
 | AI API key | `Ai:ApiKey` | `Ai__ApiKey` or `AI_API_KEY` |
 | OpenAI-compatible base URL | `Ai:BaseUrl` | `Ai__BaseUrl` |
 | AI model | `Ai:Model` | `Ai__Model` |
-| AI timeout / retry | `Ai:TimeoutSeconds`, `Ai:RetryCount` | `Ai__TimeoutSeconds`, `Ai__RetryCount` |
+| AI timeout / retry / fallback | `Ai:TimeoutSeconds`, `Ai:RetryCount`, `Ai:EnableFallback` | `Ai__TimeoutSeconds`, `Ai__RetryCount`, `Ai__EnableFallback` |
 | Prompt version | `Ai:PromptVersion` | `Ai__PromptVersion` |
 | Azure Document Intelligence | `UniFlow:Ocr:Azure:ApiKey` | `AZURE_DOCUMENT_INTELLIGENCE_KEY` |
 | DB provider | `Database:Provider` | `Database__Provider` |
@@ -92,14 +92,14 @@ dotnet user-secrets list
 
 ## Validation behavior
 
-- **Development:** `Jwt:Key` required (user-secrets or `JWT_KEY`). AI optional — use `Ai:Provider = Fake` or leave `Ai:ApiKey` empty for heuristic syllabus parsing.
+- **Development:** `Jwt:Key` required (user-secrets or `JWT_KEY`). AI optional — use `Ai:Provider = Fake` or leave `Ai:ApiKey` empty for heuristic syllabus parsing and template daily messages. Startup logs `UniFlow.Ai.Configuration` with `ApiKeyConfigured` and `EffectiveBehavior` (never the key itself).
 - **Production:** JWT key, connection string required; `Ai:ApiKey` required when `Ai:Provider` is not `Fake`. **`Ai:Provider=Fake` fails startup validation in Production.**
 - **Testing:** Integration tests use SQLite in-memory and `Ai:Provider = Fake` — no external AI calls.
-- Legacy `UniFlow:Gemini:ApiKey` is optional — primary validation is via the `Ai` section. `GEMINI_API_KEY` still maps to `Ai:ApiKey` when empty.
+- Legacy `UniFlow:Gemini:ApiKey` is optional — primary validation is via the `Ai` section. `GEMINI_API_KEY` and `AI_API_KEY` still map to `Ai:ApiKey` when empty.
 
 ## AI provider configuration
 
-Central section in `appsettings.json` / user-secrets / environment variables:
+Central section in `appsettings.json` / user-secrets / environment variables (Docker: copy `.env.example` → `.env`):
 
 ```json
 {
@@ -107,7 +107,7 @@ Central section in `appsettings.json` / user-secrets / environment variables:
     "Provider": "Gemini",
     "ApiKey": "",
     "BaseUrl": "https://api.openai.com/v1",
-    "Model": "gemini-2.0-flash",
+    "Model": "gemini-2.5-flash",
     "TimeoutSeconds": 30,
     "RetryCount": 2,
     "PromptVersion": "v1",
@@ -117,21 +117,43 @@ Central section in `appsettings.json` / user-secrets / environment variables:
 }
 ```
 
+Docker Compose maps `Ai__*` from `.env` into the API container (see root `docker-compose.yml` and `.env.example`).
+
 | `Ai:Provider` | Use case |
 | ------------- | -------- |
 | `Gemini` | Google Gemini REST API (default for existing setups) |
 | `OpenAiCompatible` | OpenAI, OpenRouter, Groq, or any OpenAI-style `/chat/completions` gateway |
 | `Fake` | Local/tests — deterministic responses; syllabus scan uses heuristic parser |
 
-Legacy `UniFlow:Gemini` settings still bind; `GEMINI_API_KEY` maps to `Ai:ApiKey` when `Ai:ApiKey` is empty.
+Legacy `UniFlow:Gemini` settings still bind; `GEMINI_API_KEY` / `AI_API_KEY` map to `Ai:ApiKey` when `Ai:ApiKey` is empty.
+
+### Startup diagnostic
+
+On boot (except Testing), the API logs:
+
+```
+AI configuration: Environment=..., Provider=..., Model=..., ApiKeyConfigured=..., EnableFallback=..., EffectiveBehavior=...
+```
+
+For `OpenAiCompatible`, `BaseUrl` is logged separately. In Development without a key, a Debug message explains how to enable live calls or switch to `Fake`.
 
 ### Gemini
 
+**user-secrets:**
+
 ```bash
 dotnet user-secrets set "Ai:Provider" "Gemini"
-dotnet user-secrets set "Ai:Model" "gemini-2.0-flash"
-dotnet user-secrets set "Ai:ApiKey" "YOUR_GEMINI_KEY"
-# or: set GEMINI_API_KEY=...
+dotnet user-secrets set "Ai:Model" "gemini-2.5-flash"
+dotnet user-secrets set "Ai:ApiKey" "YOUR_AI_STUDIO_KEY"
+# or: export GEMINI_API_KEY=AIzaSy...
+```
+
+**Docker `.env`:**
+
+```env
+Ai__Provider=Gemini
+Ai__Model=gemini-2.5-flash
+Ai__ApiKey=YOUR_AI_STUDIO_KEY
 ```
 
 ### OpenAI-compatible (OpenRouter example)
@@ -145,19 +167,44 @@ dotnet user-secrets set "Ai:Model" "meta-llama/llama-3.2-3b-instruct:free"
 dotnet user-secrets set "Ai:ApiKey" "YOUR_OPENROUTER_KEY"
 ```
 
+Docker `.env`:
+
+```env
+Ai__Provider=OpenAiCompatible
+Ai__BaseUrl=https://openrouter.ai/api/v1
+Ai__Model=meta-llama/llama-3.2-3b-instruct:free
+Ai__ApiKey=YOUR_OPENROUTER_KEY
+```
+
 ### Groq (OpenAI-compatible)
 
 ```bash
 dotnet user-secrets set "Ai:Provider" "OpenAiCompatible"
 dotnet user-secrets set "Ai:BaseUrl" "https://api.groq.com/openai/v1"
-dotnet user-secrets set "Ai:Model" "openai/gpt-oss-20b"
+dotnet user-secrets set "Ai:Model" "llama-3.1-8b-instant"
 dotnet user-secrets set "Ai:ApiKey" "YOUR_GROQ_KEY"
+```
+
+Docker `.env`:
+
+```env
+Ai__Provider=OpenAiCompatible
+Ai__BaseUrl=https://api.groq.com/openai/v1
+Ai__Model=llama-3.1-8b-instant
+Ai__ApiKey=YOUR_GROQ_KEY
 ```
 
 ### Fake provider (local / CI)
 
 ```json
 "Ai": { "Provider": "Fake", "Model": "fake-model" }
+```
+
+Docker `.env`:
+
+```env
+Ai__Provider=Fake
+Ai__Model=fake-model
 ```
 
 Chat returns a deterministic stub message. Syllabus scan/confirm uses the heuristic parser (no real API call).

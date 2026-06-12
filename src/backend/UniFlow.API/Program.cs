@@ -97,6 +97,7 @@ await app.ApplyDevelopmentMigrationsAsync().ConfigureAwait(false);
 
 // Resolve validated JWT options so signing key is loaded (including user-secrets / env overrides).
 _ = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
+app.LogAiStartupDiagnostics();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
