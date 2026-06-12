@@ -9,6 +9,7 @@
     <conv:TaskStatusToBadgeBgConverter x:Key="TaskStatusBadgeBg" />
     <conv:TaskStatusToBadgeTextConverter x:Key="TaskStatusBadgeText" />
     <conv:IsNotNullConverter x:Key="IsNotNullConverter" />
+    <conv:InvertedBoolConverter x:Key="InvertedBoolConverter" />
 
     <!-- Page -->
     <Style x:Key="UniFlowPage" TargetType="ContentPage">
