@@ -109,10 +109,10 @@ public sealed class GeminiAiProvider
             401 or 403 =>
                 "Gemini API key geçersiz. Google AI Studio'dan alınan AIzaSy... ile başlayan key kullanın (user-secrets: Ai:ApiKey).",
             404 =>
-                "Gemini model bulunamadı. Ai:Model değerini kontrol edin (ör. gemini-2.0-flash).",
+                "Gemini model bulunamadı. Ai:Model değerini kontrol edin (ör. gemini-2.5-flash).",
             429 => "Gemini rate limit aşıldı. Kısa süre sonra tekrar deneyin.",
             503 =>
-                "Gemini geçici olarak kullanılamıyor veya model/key hatalı. Modeli gemini-2.0-flash yapıp AIzaSy key ile deneyin.",
+                "Gemini geçici olarak kullanılamıyor veya model/key hatalı. Modeli gemini-2.5-flash yapıp AIzaSy key ile deneyin.",
             _ => $"Gemini isteği başarısız (HTTP {statusCode}).",
         };
 

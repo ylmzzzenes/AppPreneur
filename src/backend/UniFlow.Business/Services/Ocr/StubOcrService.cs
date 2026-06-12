@@ -24,7 +24,7 @@ public sealed class StubOcrService : IOcrService
 
         return Task.FromResult(Result<string>.Fail(
             "OCR_STUB_BINARY",
-            "Stub OCR cannot read binary documents. Configure Azure, Tesseract, or AWS provider."));
+            "Stub OCR görsel/PDF okuyamaz. Development için UniFlow:Ocr:Provider=Gemini ve Ai:ApiKey ayarlayın."));
     }
 
     private static bool IsMostlyUtf8Text(byte[] data)

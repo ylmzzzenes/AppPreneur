@@ -6,6 +6,7 @@ public enum OcrProvider
     Azure = 1,
     Tesseract = 2,
     Aws = 3,
+    Gemini = 4,
 }
 
 public sealed class UniFlowOcrOptions

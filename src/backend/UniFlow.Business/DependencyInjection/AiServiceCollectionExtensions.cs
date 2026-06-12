@@ -21,6 +21,7 @@ public static class AiServiceCollectionExtensions
         services.AddKeyedTransient<IOcrService, AzureDocumentIntelligenceOcrService>(OcrProvider.Azure);
         services.AddKeyedTransient<IOcrService, TesseractOcrService>(OcrProvider.Tesseract);
         services.AddKeyedTransient<IOcrService, AwsTextractOcrService>(OcrProvider.Aws);
+        services.AddKeyedTransient<IOcrService, GeminiOcrService>(OcrProvider.Gemini);
 
         services.AddTransient<IOcrService>(sp =>
         {
