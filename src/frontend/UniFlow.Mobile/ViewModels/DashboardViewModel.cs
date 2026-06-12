@@ -42,6 +42,21 @@ public partial class DashboardViewModel(
     [ObservableProperty]
     private bool hasDashboardData;
 
+    public bool ShowInitialLoading => IsLoading && !HasDashboardData;
+
+    partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(ShowInitialLoading));
+
+    partial void OnHasDashboardDataChanged(bool value) => OnPropertyChanged(nameof(ShowInitialLoading));
+
+    public bool ShowWeeklyPlaceholder =>
+        !HasWeeklySummary && !IsWeeklyLoading && !HasWeeklySummaryError;
+
+    partial void OnHasWeeklySummaryChanged(bool value) => OnPropertyChanged(nameof(ShowWeeklyPlaceholder));
+
+    partial void OnIsWeeklyLoadingChanged(bool value) => OnPropertyChanged(nameof(ShowWeeklyPlaceholder));
+
+    partial void OnHasWeeklySummaryErrorChanged(bool value) => OnPropertyChanged(nameof(ShowWeeklyPlaceholder));
+
     [ObservableProperty]
     private string weeklySummaryText = string.Empty;
 
@@ -108,7 +123,8 @@ public partial class DashboardViewModel(
 
         if (result.Error?.Code == "UNAUTHORIZED")
         {
-            await HandleUnauthorizedAsync(cancellationToken).ConfigureAwait(false);
+            await AuthSessionNavigator.HandleUnauthorizedIfNeededAsync(
+                result.Error.Code, tokenStore, userSession, cancellationToken).ConfigureAwait(false);
             return;
         }
 
@@ -248,7 +264,9 @@ public partial class DashboardViewModel(
         if (result.Error?.Code == "UNAUTHORIZED")
         {
             task.Status = previousStatus;
-            await HandleUnauthorizedAsync(cancellationToken).ConfigureAwait(false);
+            EnqueueSnack("Oturum süresi doldu. Lütfen giriş yapın.");
+            await AuthSessionNavigator.HandleUnauthorizedIfNeededAsync(
+                result.Error.Code, tokenStore, userSession, cancellationToken).ConfigureAwait(false);
             return;
         }
 
@@ -265,15 +283,6 @@ public partial class DashboardViewModel(
         {
             LoadCommand.Execute(null);
         }
-    }
-
-    private async Task HandleUnauthorizedAsync(CancellationToken cancellationToken)
-    {
-        await tokenStore.ClearAsync(cancellationToken).ConfigureAwait(false);
-        userSession.Clear();
-        EnqueueSnack("Oturum süresi doldu. Lütfen giriş yapın.");
-        await MainThread.InvokeOnMainThreadAsync(async () =>
-            await Shell.Current.GoToAsync($"//{Routes.Login}")).ConfigureAwait(false);
     }
 
     private void EnqueueSnack(string message)

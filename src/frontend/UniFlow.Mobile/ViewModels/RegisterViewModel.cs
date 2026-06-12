@@ -26,18 +26,28 @@ public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tok
     private string? statusMessage;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RegisterCommand))]
+    [NotifyCanExecuteChangedFor(nameof(GoBackCommand))]
     private bool isBusy;
+
+    private bool CanSubmit => !IsBusy;
 
     [RelayCommand]
     private void TogglePasswordVisibility() => ObscurePassword = !ObscurePassword;
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSubmit))]
     private async Task RegisterAsync(CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(Email) ||
             string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
         {
             StatusMessage = "Tüm alanları doldurun.";
+            return;
+        }
+
+        if (!Email.Trim().Contains('@'))
+        {
+            StatusMessage = "Geçerli bir e-posta adresi girin.";
             return;
         }
 
@@ -90,6 +100,6 @@ public partial class RegisterViewModel(IApiClient apiClient, IAuthTokenStore tok
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSubmit))]
     private Task GoBackAsync() => Shell.Current.GoToAsync("..");
 }

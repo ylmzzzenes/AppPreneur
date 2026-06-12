@@ -28,11 +28,17 @@ public partial class SyllabusViewModel(IApiClient apiClient, ISyllabusScanState 
     public bool ShowStatusBanner => !string.IsNullOrWhiteSpace(StatusMessage);
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ScanCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ChooseFileSourceCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PickPhotoCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CapturePhotoCommand))]
     private bool isBusy;
 
     private FileResult? _pickedFile;
 
-    [RelayCommand]
+    private bool CanInteract => !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanInteract))]
     private async Task ChooseFileSourceAsync(CancellationToken cancellationToken)
     {
         var page = Shell.Current?.CurrentPage;
@@ -58,7 +64,7 @@ public partial class SyllabusViewModel(IApiClient apiClient, ISyllabusScanState 
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanInteract))]
     private async Task PickPhotoAsync(CancellationToken cancellationToken)
     {
         try
@@ -83,7 +89,7 @@ public partial class SyllabusViewModel(IApiClient apiClient, ISyllabusScanState 
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanInteract))]
     private async Task CapturePhotoAsync(CancellationToken cancellationToken)
     {
         try
@@ -115,7 +121,7 @@ public partial class SyllabusViewModel(IApiClient apiClient, ISyllabusScanState 
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanInteract))]
     private async Task ScanAsync(CancellationToken cancellationToken)
     {
         if (_pickedFile is null)

@@ -58,6 +58,12 @@ public partial class TasksViewModel(
 
         try
         {
+            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+            {
+                StatusMessage = "İnternet bağlantısı yok.";
+                return;
+            }
+
             if (Courses.Count == 0)
             {
                 var coursesResult = await apiClient.GetCoursesAsync(cancellationToken).ConfigureAwait(false);
@@ -254,18 +260,9 @@ public partial class TasksViewModel(
         ApplyFilters();
     }
 
-    private async Task<bool> HandleAuthAsync(string? errorCode, CancellationToken cancellationToken)
-    {
-        if (errorCode != "UNAUTHORIZED")
-        {
-            return false;
-        }
-
-        await tokenStore.ClearAsync(cancellationToken).ConfigureAwait(false);
-        await MainThread.InvokeOnMainThreadAsync(async () =>
-            await Shell.Current.GoToAsync($"//{Routes.Login}")).ConfigureAwait(false);
-        return true;
-    }
+    private async Task<bool> HandleAuthAsync(string? errorCode, CancellationToken cancellationToken) =>
+        await AuthSessionNavigator.HandleUnauthorizedIfNeededAsync(errorCode, tokenStore, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 }
 
 public enum TaskListRange

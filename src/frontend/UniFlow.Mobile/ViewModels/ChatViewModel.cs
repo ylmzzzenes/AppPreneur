@@ -6,7 +6,7 @@ using UniFlow.Mobile.Services;
 
 namespace UniFlow.Mobile.ViewModels;
 
-public partial class ChatViewModel(IApiClient apiClient) : ObservableObject
+public partial class ChatViewModel(IApiClient apiClient, IAuthTokenStore tokenStore) : ObservableObject
 {
     public ObservableCollection<ChatMessageModel> Messages { get; } = new();
 
@@ -14,10 +14,16 @@ public partial class ChatViewModel(IApiClient apiClient) : ObservableObject
     private string draftMessage = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SendCommand))]
     private bool isThinking;
 
     [ObservableProperty]
     private string? statusMessage;
+
+    partial void OnDraftMessageChanged(string value)
+    {
+        SendCommand.NotifyCanExecuteChanged();
+    }
 
     partial void OnStatusMessageChanged(string? value)
     {
@@ -26,7 +32,9 @@ public partial class ChatViewModel(IApiClient apiClient) : ObservableObject
 
     public bool ShowStatusBanner => !string.IsNullOrWhiteSpace(StatusMessage);
 
-    [RelayCommand]
+    private bool CanSend => !IsThinking && !string.IsNullOrWhiteSpace(DraftMessage);
+
+    [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task SendAsync(CancellationToken cancellationToken)
     {
         var text = DraftMessage.Trim();
@@ -49,22 +57,18 @@ public partial class ChatViewModel(IApiClient apiClient) : ObservableObject
             }
 
             var result = await apiClient.SendChatAsync(text, cancellationToken).ConfigureAwait(false);
+
+            if (await AuthSessionNavigator.HandleUnauthorizedIfNeededAsync(
+                    result.Error?.Code, tokenStore, cancellationToken: cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 if (!result.IsSuccess || string.IsNullOrWhiteSpace(result.Data))
                 {
-                    var message = result.Error?.Message;
-                    if (string.IsNullOrWhiteSpace(message))
-                    {
-                        message = "Yanıt alınamadı.";
-                    }
-
-                    StatusMessage = message;
-                    Messages.Add(new ChatMessageModel
-                    {
-                        Text = message,
-                        IsFromUser = false,
-                    });
+                    StatusMessage = result.Error?.Message ?? "Yanıt alınamadı.";
                     return;
                 }
 

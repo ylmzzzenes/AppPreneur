@@ -20,17 +20,27 @@ public partial class LoginViewModel(IApiClient apiClient, IAuthTokenStore tokenS
     private string? statusMessage;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
+    [NotifyCanExecuteChangedFor(nameof(OpenRegisterCommand))]
     private bool isBusy;
+
+    private bool CanSubmit => !IsBusy;
 
     [RelayCommand]
     private void TogglePasswordVisibility() => ObscurePassword = !ObscurePassword;
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSubmit))]
     private async Task LoginAsync(CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
         {
             StatusMessage = "E-posta ve şifre gerekli.";
+            return;
+        }
+
+        if (!Email.Trim().Contains('@'))
+        {
+            StatusMessage = "Geçerli bir e-posta adresi girin.";
             return;
         }
 
@@ -66,7 +76,7 @@ public partial class LoginViewModel(IApiClient apiClient, IAuthTokenStore tokenS
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSubmit))]
     private Task OpenRegisterAsync() =>
         Shell.Current.GoToAsync(Routes.Register);
 }

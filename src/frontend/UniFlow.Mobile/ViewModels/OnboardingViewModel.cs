@@ -38,9 +38,12 @@ public partial class OnboardingViewModel(
     private string? statusMessage;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private bool isBusy;
 
-    [RelayCommand]
+    private bool CanSubmit => !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanSubmit))]
     private async Task SaveAsync(CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(DisplayName))
@@ -85,7 +88,8 @@ public partial class OnboardingViewModel(
 
             if (result.Error?.Code == "UNAUTHORIZED")
             {
-                await HandleUnauthorizedAsync(cancellationToken).ConfigureAwait(false);
+                await AuthSessionNavigator.HandleUnauthorizedIfNeededAsync(
+                    result.Error.Code, tokenStore, userSession, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -107,14 +111,6 @@ public partial class OnboardingViewModel(
         {
             await MainThread.InvokeOnMainThreadAsync(() => IsBusy = false);
         }
-    }
-
-    private async Task HandleUnauthorizedAsync(CancellationToken cancellationToken)
-    {
-        await tokenStore.ClearAsync(cancellationToken).ConfigureAwait(false);
-        userSession.Clear();
-        await MainThread.InvokeOnMainThreadAsync(async () =>
-            await Shell.Current.GoToAsync($"//{Routes.Login}")).ConfigureAwait(false);
     }
 }
 
