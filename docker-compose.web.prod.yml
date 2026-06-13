@@ -1,0 +1,27 @@
+# Phase A — Web only on port 3000 (API stays on host nginx :80)
+#
+# Does NOT start or modify postgres/api containers.
+# Web calls live API at http://49.13.89.74 (cross-origin; requires API CORS patch).
+#
+# Usage:
+#   docker compose -f docker-compose.web.prod.yml build
+#   docker compose -f docker-compose.web.prod.yml up -d
+
+services:
+  web:
+    build:
+      context: src/frontend/UniFlow.Web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://49.13.89.74
+    image: uniflow-web:prod
+    container_name: uniflow-web-prod
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

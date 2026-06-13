@@ -29,6 +29,10 @@ public static class MauiProgram
             })
             .AddHttpMessageHandler<AuthHeaderHandler>();
 
+#if DEBUG
+        System.Diagnostics.Debug.WriteLine($"[UniFlow] API base URL: {ApiConstants.BaseUrl}");
+#endif
+
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<RegisterViewModel>();
         builder.Services.AddTransient<DashboardViewModel>();

@@ -39,6 +39,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddUniFlowRateLimiting(builder.Configuration);
+builder.Services.AddUniFlowCors(builder.Configuration, builder.Environment);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
@@ -114,6 +115,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseCors(CorsExtensions.PolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();

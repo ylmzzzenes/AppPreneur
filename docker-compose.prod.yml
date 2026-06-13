@@ -1,0 +1,74 @@
+# Production stack: PostgreSQL + API (internal) + Web/nginx gateway (port 80)
+#
+# Mobile compatibility: API paths stay at /api/v1/* and /health — unchanged.
+# Root / serves the React SPA. Do not move API under a new prefix without updating mobile.
+#
+# If host nginx already listens on :80, either:
+#   A) Stop host nginx and use this web container on :80, or
+#   B) Point host nginx to web:80 and remove direct API exposure (see docs/deployment-web.md)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: uniflow-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-uniflow}
+      POSTGRES_USER: ${POSTGRES_USER:-uniflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - uniflow_pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-uniflow} -d ${POSTGRES_DB:-uniflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/UniFlow.API/Dockerfile
+    container_name: uniflow-api-prod
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      Database__Provider: ${DATABASE_PROVIDER:-PostgreSql}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB:-uniflow};Username=${POSTGRES_USER:-uniflow};Password=${POSTGRES_PASSWORD}
+      JWT_KEY: ${JWT_KEY:?JWT_KEY is required}
+      Jwt__Key: ${JWT_KEY}
+      Ai__Provider: ${Ai__Provider:-Gemini}
+      Ai__ApiKey: ${Ai__ApiKey:-}
+      Ai__Model: ${Ai__Model:-gemini-2.5-flash}
+      Ai__EnableFallback: ${Ai__EnableFallback:-true}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      UniFlow__Ocr__Provider: ${UniFlow__Ocr__Provider:-Gemini}
+    env_file:
+      - path: .env.production
+        required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+  web:
+    build:
+      context: src/frontend/UniFlow.Web
+      dockerfile: Dockerfile
+    container_name: uniflow-web-prod
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-80}:80"
+
+volumes:
+  uniflow_pgdata_prod:

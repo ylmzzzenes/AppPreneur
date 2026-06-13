@@ -1,0 +1,8 @@
+# Mevcut api servisine CORS ekler (.env.production'a dokunmaz).
+# Kullanım (sunucuda, mevcut docker-compose.prod.yml ile birlikte):
+#   docker compose -f docker-compose.prod.yml -f deploy/phase-a/api-cors.override.yml up -d api
+
+services:
+  api:
+    environment:
+      Cors__AllowedOrigins__0: http://49.13.89.74:3000

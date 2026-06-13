@@ -92,6 +92,7 @@ secrets.json
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 ## SQL Server / local DB
 *.mdf

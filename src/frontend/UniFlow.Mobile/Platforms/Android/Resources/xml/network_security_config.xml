@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- No HTTPS yet: allow cleartext to Hetzner IP, emulator host, and local dev. -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
