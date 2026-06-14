@@ -3,11 +3,13 @@ interface EmptyStateProps {
   description?: string;
   actionLabel?: string;
   onAction?: () => void;
+  icon?: string;
 }
 
-export function EmptyState({ title, description, actionLabel, onAction }: EmptyStateProps) {
+export function EmptyState({ title, description, actionLabel, onAction, icon = '📭' }: EmptyStateProps) {
   return (
     <div className="empty-state">
+      <div className="empty-state-icon" aria-hidden>{icon}</div>
       <h3>{title}</h3>
       {description && <p>{description}</p>}
       {actionLabel && onAction && (

@@ -14,6 +14,12 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+const TOAST_ICONS: Record<ToastType, string> = {
+  success: '✓',
+  error: '✕',
+  info: 'ℹ',
+};
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
@@ -22,7 +28,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => [...prev, { id, message, type }]);
     window.setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, 4200);
   }, []);
 
   const value = useMemo(() => ({ showToast }), [showToast]);
@@ -32,7 +38,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="toast-container" aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast toast-${t.type}`}>
+          <div key={t.id} className={`toast toast-${t.type}`} role="status">
+            <span style={{ marginRight: '0.5rem' }}>{TOAST_ICONS[t.type]}</span>
             {t.message}
           </div>
         ))}

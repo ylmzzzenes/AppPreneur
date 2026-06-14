@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { getErrorMessage, usersApi } from '../api/services';
 import type { PersonalityVibe } from '../api/types';
-import { PERSONALITY_OPTIONS } from '../constants/personality';
+import { AuthShell } from '../components/AuthShell';
 import { ErrorBanner } from '../components/ErrorBanner';
+import { PERSONALITY_OPTIONS } from '../constants/personality';
 import { useToast } from '../context/ToastContext';
 
 export function OnboardingPage() {
@@ -44,27 +45,31 @@ export function OnboardingPage() {
   }
 
   return (
-    <div className="auth-shell">
-      <form className="auth-card card onboarding-card" onSubmit={handleSubmit}>
-        <h1>Hoş geldiniz</h1>
+    <AuthShell wide>
+      <form className="auth-card card card-elevated onboarding-card" onSubmit={handleSubmit}>
+        <h1>Hoş geldiniz 👋</h1>
         <p className="muted">Birkaç bilgiyle UniFlow deneyimini kişiselleştirelim.</p>
         <ErrorBanner message={error} />
-        <label>Görünen ad<input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required /></label>
-        <label>Bölüm<input value={major} onChange={(e) => setMajor(e.target.value)} /></label>
-        <label>Akademik hedef<textarea value={academicGoal} onChange={(e) => setAcademicGoal(e.target.value)} rows={3} /></label>
-        <label>
-          AI kişilik tonu
-          <select value={personalityVibe} onChange={(e) => setPersonalityVibe(e.target.value as PersonalityVibe)}>
-            {PERSONALITY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </label>
-        <label>Günlük çalışma hedefi (dk)<input type="number" min={15} max={720} value={dailyMinutes} onChange={(e) => setDailyMinutes(Number(e.target.value))} /></label>
+        <div className="grid-2" style={{ gap: '0 1rem' }}>
+          <label>Görünen ad<input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required /></label>
+          <label>Bölüm<input value={major} onChange={(e) => setMajor(e.target.value)} placeholder="Bölümünüz" /></label>
+        </div>
+        <label>Akademik hedef<textarea value={academicGoal} onChange={(e) => setAcademicGoal(e.target.value)} rows={3} placeholder="Bu dönem ne başarmak istiyorsunuz?" /></label>
+        <div className="grid-2" style={{ gap: '0 1rem' }}>
+          <label>
+            AI kişilik tonu
+            <select value={personalityVibe} onChange={(e) => setPersonalityVibe(e.target.value as PersonalityVibe)}>
+              {PERSONALITY_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+          <label>Günlük çalışma hedefi (dk)<input type="number" min={15} max={720} value={dailyMinutes} onChange={(e) => setDailyMinutes(Number(e.target.value))} /></label>
+        </div>
         <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
           {loading ? 'Kaydediliyor...' : 'Başla'}
         </button>
       </form>
-    </div>
+    </AuthShell>
   );
 }

@@ -4,6 +4,8 @@ import { getErrorMessage, syllabusApi } from '../api/services';
 import type { SyllabusDetectedItem } from '../api/types';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBanner } from '../components/ErrorBanner';
+import { PageHeader } from '../components/ui/PageHeader';
+import { StepIndicator } from '../components/ui/StepIndicator';
 import { useSyllabusScan } from '../context/SyllabusScanContext';
 import { useToast } from '../context/ToastContext';
 
@@ -23,13 +25,19 @@ export function SyllabusPreviewPage() {
   if (!scan) {
     return (
       <div className="page">
-        <EmptyState title="Tarama oturumu bulunamadı" description="Önce müfredat dosyası tarayın." actionLabel="Müfredat tara" onAction={() => navigate('/syllabus')} />
+        <EmptyState icon="📄" title="Tarama oturumu bulunamadı" description="Önce müfredat dosyası tarayın." actionLabel="Müfredat tara" onAction={() => navigate('/syllabus')} />
       </div>
     );
   }
 
+  const selectedCount = items.filter((i) => i.selected).length;
+
   function toggle(index: number) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, selected: !item.selected } : item)));
+  }
+
+  function toggleAll(selected: boolean) {
+    setItems((prev) => prev.map((item) => ({ ...item, selected })));
   }
 
   async function confirm() {
@@ -58,28 +66,37 @@ export function SyllabusPreviewPage() {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <h1>Müfredat Önizleme</h1>
-        <button type="button" className="btn btn-secondary" onClick={() => navigate('/syllabus')}>Geri</button>
-      </div>
-      <p className="muted">{scan.sourceSummary}</p>
+      <PageHeader
+        title="Müfredat Önizleme"
+        subtitle={`${scan.courseCode} — ${scan.courseTitle}`}
+        actions={<button type="button" className="btn btn-secondary" onClick={() => navigate('/syllabus')}>← Geri</button>}
+      />
+      <StepIndicator steps={['Yükle & Tara', 'Önizle', 'Onayla']} current={1} />
+      <p className="muted small">{scan.sourceSummary}</p>
       <ErrorBanner message={error} />
-      <section className="card">
+      <section className="card card-elevated">
+        <div className="card-header-row">
+          <h2>{selectedCount} / {items.length} öğe seçili</h2>
+          <div className="btn-group">
+            <button type="button" className="btn btn-sm btn-secondary" onClick={() => toggleAll(true)}>Tümünü seç</button>
+            <button type="button" className="btn btn-sm btn-ghost" onClick={() => toggleAll(false)}>Temizle</button>
+          </div>
+        </div>
         <ul className="task-list">
           {items.map((item, index) => (
-            <li key={`${item.title}-${index}`}>
-              <label className="checkbox-row">
+            <li key={`${item.title}-${index}`} className="task-row">
+              <label className="checkbox-row" style={{ margin: 0, flex: 1 }}>
                 <input type="checkbox" checked={item.selected} onChange={() => toggle(index)} />
-                <span>
+                <span className="task-row-main">
                   <strong>{item.title}</strong>
-                  {item.dueDate && <span className="muted"> · {new Date(item.dueDate).toLocaleDateString('tr-TR')}</span>}
+                  {item.dueDate && <span className="muted">📅 {new Date(item.dueDate).toLocaleDateString('tr-TR')}</span>}
                 </span>
               </label>
             </li>
           ))}
         </ul>
-        <button type="button" className="btn btn-primary" disabled={confirming} onClick={() => void confirm()}>
-          {confirming ? 'Onaylanıyor...' : 'Seçilenleri Görev Olarak Ekle'}
+        <button type="button" className="btn btn-primary btn-block" style={{ marginTop: '1rem' }} disabled={confirming || selectedCount === 0} onClick={() => void confirm()}>
+          {confirming ? 'Onaylanıyor...' : `Seçilen ${selectedCount} görevi ekle`}
         </button>
       </section>
     </div>

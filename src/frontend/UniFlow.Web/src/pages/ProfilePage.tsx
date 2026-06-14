@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { getErrorMessage, usersApi } from '../api/services';
 import type { PersonalityVibe } from '../api/types';
-import { PERSONALITY_OPTIONS } from '../constants/personality';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { PageLoader } from '../components/PageLoader';
+import { PageHeader } from '../components/ui/PageHeader';
+import { PERSONALITY_OPTIONS } from '../constants/personality';
 import { useToast } from '../context/ToastContext';
 
 export function ProfilePage() {
@@ -18,7 +19,6 @@ export function ProfilePage() {
   const [personalityVibe, setPersonalityVibe] = useState<PersonalityVibe>('Friendly');
   const [dailyMinutes, setDailyMinutes] = useState(120);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -37,7 +37,6 @@ export function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     setError('');
-    setSuccess('');
     const result = await usersApi.updateOnboarding({
       displayName: displayName.trim(),
       major: major.trim() || undefined,
@@ -49,7 +48,6 @@ export function ProfilePage() {
       setError(getErrorMessage(result, 'Profil kaydedilemedi.'));
     } else {
       await refreshProfile();
-      setSuccess('Profil güncellendi.');
       showToast('Profil güncellendi.', 'success');
     }
     setSaving(false);
@@ -57,26 +55,34 @@ export function ProfilePage() {
 
   if (loading) return <PageLoader label="Profil yükleniyor..." />;
 
+  const initial = profile?.displayName?.charAt(0)?.toUpperCase() ?? '?';
+
   return (
     <div className="page">
-      <div className="page-header">
-        <h1>Profil</h1>
-        <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard')}>Geri</button>
+      <PageHeader title="Profil" subtitle="Hesap ve tercih ayarlarınız" actions={<button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard')}>← Geri</button>} />
+
+      <div className="profile-hero">
+        <span className="avatar">{initial}</span>
+        <div>
+          <h2>{profile?.displayName}</h2>
+          <p>{profile?.email}</p>
+          {profile?.major && <p className="small">{profile.major}</p>}
+        </div>
       </div>
+
       <ErrorBanner message={error} />
-      {success && <div className="banner banner-success">{success}</div>}
-      <form className="card form-grid" onSubmit={handleSubmit}>
+      <form className="card card-elevated form-grid" onSubmit={handleSubmit}>
         <label>E-posta<input value={profile?.email ?? ''} disabled /></label>
         <label>Görünen ad<input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required /></label>
-        <label>Bölüm<input value={major} onChange={(e) => setMajor(e.target.value)} /></label>
+        <label>Bölüm<input value={major} onChange={(e) => setMajor(e.target.value)} placeholder="Bölümünüz" /></label>
         <label>Akademik hedef<textarea value={academicGoal} onChange={(e) => setAcademicGoal(e.target.value)} rows={3} /></label>
-        <label>AI kişilik
+        <label>AI kişilik tonu
           <select value={personalityVibe} onChange={(e) => setPersonalityVibe(e.target.value as PersonalityVibe)}>
             {PERSONALITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </label>
-        <label>Günlük hedef (dk)<input type="number" min={15} max={720} value={dailyMinutes} onChange={(e) => setDailyMinutes(Number(e.target.value))} /></label>
-        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</button>
+        <label>Günlük çalışma hedefi (dk)<input type="number" min={15} max={720} value={dailyMinutes} onChange={(e) => setDailyMinutes(Number(e.target.value))} /></label>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}</button>
       </form>
     </div>
   );

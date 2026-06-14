@@ -3,6 +3,9 @@ import { coursesApi, getErrorMessage, aiApi } from '../api/services';
 import type { Course, StudyPlanResponse } from '../api/types';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { PageLoader } from '../components/PageLoader';
+import { AiBadge } from '../components/ui/Badge';
+import { PageHeader } from '../components/ui/PageHeader';
+import { IconBrain } from '../components/ui/Icons';
 
 export function StudyPlanPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -42,41 +45,55 @@ export function StudyPlanPage() {
 
   return (
     <div className="page">
-      <h1>Çalışma Planı</h1>
-      <p className="muted">AI destekli günlük çalışma planı oluşturun.</p>
-      <ErrorBanner message={error} />
+      <PageHeader title="Çalışma Planı" subtitle="AI destekli kişisel günlük çalışma planı oluşturun." />
 
-      <section className="card form-grid">
-        <label>Gün sayısı
-          <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
-            <option value={3}>3 gün</option>
-            <option value={7}>7 gün</option>
-            <option value={14}>14 gün</option>
-          </select>
-        </label>
-        <label>Ders (isteğe bağlı)
-          <select value={courseId} onChange={(e) => setCourseId(e.target.value ? Number(e.target.value) : '')}>
-            <option value="">Tüm dersler</option>
-            {courses.map((c) => <option key={c.id} value={c.id}>{c.code} — {c.title}</option>)}
-          </select>
-        </label>
-        <label>Odak<textarea value={focus} onChange={(e) => setFocus(e.target.value)} rows={2} placeholder="Örn: final haftası, proje teslimi" /></label>
+      <section className="card highlight-card card-elevated">
+        <div className="card-header-row">
+          <h2><span className="inline-icon"><IconBrain size={18} /></span> Plan oluştur</h2>
+        </div>
+        <ErrorBanner message={error} />
+        <div className="grid-2" style={{ gap: '0 1rem' }}>
+          <label>Gün sayısı
+            <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
+              <option value={3}>3 gün</option>
+              <option value={7}>7 gün</option>
+              <option value={14}>14 gün</option>
+            </select>
+          </label>
+          <label>Ders (isteğe bağlı)
+            <select value={courseId} onChange={(e) => setCourseId(e.target.value ? Number(e.target.value) : '')}>
+              <option value="">Tüm dersler</option>
+              {courses.map((c) => <option key={c.id} value={c.id}>{c.code} — {c.title}</option>)}
+            </select>
+          </label>
+        </div>
+        <label>Odak alanı<textarea value={focus} onChange={(e) => setFocus(e.target.value)} rows={2} placeholder="Örn: final haftası, proje teslimi, vize hazırlığı" /></label>
         <button type="button" className="btn btn-primary" disabled={generating} onClick={() => void generate()}>
-          {generating ? 'Plan oluşturuluyor...' : 'Plan Oluştur'}
+          {generating ? 'Plan oluşturuluyor...' : '✨ Plan Oluştur'}
         </button>
       </section>
 
-      {plan && (
-        <section className="card">
-          <h2>{plan.title}</h2>
-          <p>{plan.summary}</p>
-          {plan.isFallback && <p className="muted">AI geçici olarak kullanılamıyor; yedek plan gösteriliyor.</p>}
+      {generating && (
+        <div className="card">
+          <div className="skeleton skeleton-card" />
+          <div className="skeleton skeleton-card" />
+          <div className="skeleton skeleton-line" style={{ width: '60%' }} />
+        </div>
+      )}
+
+      {plan && !generating && (
+        <section className="card card-elevated">
+          <div className="card-header-row">
+            <h2>{plan.title}</h2>
+            <AiBadge fallback={plan.isFallback} />
+          </div>
+          <p style={{ lineHeight: 1.6 }}>{plan.summary}</p>
           <div className="plan-days">
             {plan.days.map((day) => (
               <article key={day.date} className="plan-day-card">
-                <h3>{day.date} — {day.focus}</h3>
+                <h3>📅 {day.date} — {day.focus}</h3>
                 <ul>{day.tasks.map((t) => <li key={t.title}><strong>{t.title}</strong> ({t.estimatedMinutes} dk) — {t.reason}</li>)}</ul>
-                {day.tip && <p className="muted">İpucu: {day.tip}</p>}
+                {day.tip && <p className="muted small">💡 {day.tip}</p>}
               </article>
             ))}
           </div>

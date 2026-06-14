@@ -4,6 +4,7 @@ import { coursesApi, getErrorMessage, tasksApi } from '../api/services';
 import type { Course, TaskItemStatus } from '../api/types';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { PageLoader } from '../components/PageLoader';
+import { PageHeader } from '../components/ui/PageHeader';
 import { useToast } from '../context/ToastContext';
 
 export function TaskFormPage() {
@@ -92,33 +93,38 @@ export function TaskFormPage() {
 
   return (
     <div className="page">
-      <h1>{isEdit ? 'Görevi Düzenle' : 'Yeni Görev'}</h1>
+      <PageHeader
+        title={isEdit ? 'Görevi Düzenle' : 'Yeni Görev'}
+        subtitle={isEdit ? 'Görev bilgilerini güncelleyin' : 'Yeni bir akademik görev ekleyin'}
+        actions={<button type="button" className="btn btn-secondary" onClick={() => navigate('/tasks')}>← İptal</button>}
+      />
       <ErrorBanner message={error} />
-      <form className="card form-grid" onSubmit={handleSubmit}>
+      <form className="card card-elevated form-grid" onSubmit={handleSubmit}>
         <label>Ders
           <select value={courseId} onChange={(e) => setCourseId(Number(e.target.value))} required>
             <option value={0} disabled>Ders seçin</option>
             {courses.map((c) => <option key={c.id} value={c.id}>{c.code} — {c.title}</option>)}
           </select>
         </label>
-        <label>Başlık<input value={title} onChange={(e) => setTitle(e.target.value)} required /></label>
-        <label>Açıklama<textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></label>
-        <label>Son tarih<input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></label>
-        <label>Tahmini süre (dk)<input type="number" value={estimatedMinutes} onChange={(e) => setEstimatedMinutes(e.target.value ? Number(e.target.value) : '')} /></label>
-        <label>Öncelik<input type="number" value={priorityScore} onChange={(e) => setPriorityScore(e.target.value ? Number(e.target.value) : '')} /></label>
-        {isEdit && (
-          <label>Durum
-            <select value={status} onChange={(e) => setStatus(e.target.value as TaskItemStatus)}>
-              <option value="Pending">Bekliyor</option>
-              <option value="Done">Tamamlandı</option>
-              <option value="Missed">Kaçırıldı</option>
-            </select>
-          </label>
-        )}
-        <div className="btn-group">
-          <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</button>
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/tasks')}>İptal</button>
+        <label>Başlık<input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Görev başlığı" /></label>
+        <label>Açıklama<textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Detaylar (isteğe bağlı)" /></label>
+        <div className="grid-2" style={{ gap: '0 1rem' }}>
+          <label>Son tarih<input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></label>
+          <label>Tahmini süre (dk)<input type="number" value={estimatedMinutes} onChange={(e) => setEstimatedMinutes(e.target.value ? Number(e.target.value) : '')} placeholder="60" /></label>
         </div>
+        <div className="grid-2" style={{ gap: '0 1rem' }}>
+          <label>Öncelik skoru<input type="number" value={priorityScore} onChange={(e) => setPriorityScore(e.target.value ? Number(e.target.value) : '')} placeholder="1-10" /></label>
+          {isEdit && (
+            <label>Durum
+              <select value={status} onChange={(e) => setStatus(e.target.value as TaskItemStatus)}>
+                <option value="Pending">Bekliyor</option>
+                <option value="Done">Tamamlandı</option>
+                <option value="Missed">Kaçırıldı</option>
+              </select>
+            </label>
+          )}
+        </div>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</button>
       </form>
     </div>
   );

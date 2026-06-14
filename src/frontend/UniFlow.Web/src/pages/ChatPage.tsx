@@ -3,6 +3,14 @@ import { aiApi, getErrorMessage } from '../api/services';
 import type { ChatMessage } from '../api/types';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { EmptyState } from '../components/EmptyState';
+import { PageHeader } from '../components/ui/PageHeader';
+
+const SUGGESTIONS = [
+  'Bugün neye odaklanmalıyım?',
+  'Sınavıma nasıl hazırlanmalıyım?',
+  'Bu hafta planımı gözden geçir',
+  'Motivasyonumu kaybettim, ne yapmalıyım?',
+];
 
 function createMessage(role: 'user' | 'assistant', content: string): ChatMessage {
   return { id: crypto.randomUUID(), role, content, createdAt: new Date().toISOString() };
@@ -19,10 +27,8 @@ export function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, thinking]);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text || thinking) return;
+  async function send(text: string) {
+    if (!text.trim() || thinking) return;
     setInput('');
     setError('');
     setMessages((prev) => [...prev, createMessage('user', text)]);
@@ -37,22 +43,31 @@ export function ChatPage() {
     setMessages((prev) => [...prev, createMessage('assistant', result.data ?? 'Yanıt alınamadı.')]);
   }
 
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    await send(input);
+  }
+
   return (
     <div className="page chat-page">
-      <div className="page-header">
-        <h1>Sohbet</h1>
-        <p className="muted">Sarkastik Dahi — akademik koçunuz</p>
-      </div>
+      <PageHeader title="Sohbet" subtitle="Sarkastik Dahi — akademik koçunuz" />
       <ErrorBanner message={error} />
-      <section className="card chat-panel">
+      <section className="card card-elevated chat-panel">
         {messages.length === 0 && !thinking && (
-          <EmptyState title="Merhaba!" description="Bugün neye odaklanmalıyım? veya sınavıma nasıl hazırlanmalıyım? diye sorabilirsiniz." />
+          <>
+            <EmptyState icon="💬" title="Merhaba!" description="Akademik planlama, motivasyon veya çalışma stratejileri hakkında soru sorabilirsiniz." />
+            <div className="chat-suggestions">
+              {SUGGESTIONS.map((s) => (
+                <button key={s} type="button" className="chat-chip" onClick={() => void send(s)}>{s}</button>
+              ))}
+            </div>
+          </>
         )}
         <div className="chat-messages">
           {messages.map((m) => (
             <div key={m.id} className={`chat-bubble chat-${m.role}`}>{m.content}</div>
           ))}
-          {thinking && <div className="chat-bubble chat-assistant typing">Sarkastik Dahi yazıyor...</div>}
+          {thinking && <div className="chat-bubble chat-assistant typing">Sarkastik Dahi düşünüyor...</div>}
           <div ref={bottomRef} />
         </div>
         <form className="chat-input-row" onSubmit={handleSubmit}>

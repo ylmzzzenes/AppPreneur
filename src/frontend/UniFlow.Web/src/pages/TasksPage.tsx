@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { coursesApi, getErrorMessage, tasksApi } from '../api/services';
 import type { Course, TaskItem, TaskItemStatus, TaskListResponse } from '../api/types';
-import { TASK_STATUS_LABELS } from '../constants/personality';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { PageLoader } from '../components/PageLoader';
+import { StatusBadge } from '../components/ui/Badge';
+import { PageHeader } from '../components/ui/PageHeader';
 import { useToast } from '../context/ToastContext';
 import { tryShowTaskFeedback } from '../utils/taskFeedback';
 
@@ -22,6 +24,7 @@ export function TasksPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   async function load() {
     setLoading(true);
@@ -71,32 +74,34 @@ export function TasksPage() {
     setBusyId(null);
   }
 
-  async function removeTask(id: number) {
-    if (!window.confirm('Bu görevi silmek istediğinize emin misiniz?')) return;
-    setBusyId(id);
-    const result = await tasksApi.remove(id);
+  async function confirmDelete() {
+    if (!deleteId) return;
+    setBusyId(deleteId);
+    const result = await tasksApi.remove(deleteId);
     if (!result.isSuccess) showToast(getErrorMessage(result), 'error');
     else {
       showToast('Görev silindi.', 'success');
       await load();
     }
     setBusyId(null);
+    setDeleteId(null);
   }
 
   if (loading) return <PageLoader label="Görevler yükleniyor..." />;
 
   return (
     <div className="page">
-      <div className="page-header">
-        <h1>Görevler</h1>
-        <button type="button" className="btn btn-primary" onClick={() => navigate('/tasks/new')}>Yeni Görev</button>
-      </div>
+      <PageHeader
+        title="Görevler"
+        subtitle={`${filtered.length} görev listeleniyor`}
+        actions={<button type="button" className="btn btn-primary" onClick={() => navigate('/tasks/new')}>+ Yeni Görev</button>}
+      />
       <ErrorBanner message={error} />
 
       <div className="filter-bar card">
-        <div className="btn-group">
+        <div className="filter-pills">
           {(['today', 'upcoming', 'all'] as FilterMode[]).map((f) => (
-            <button key={f} type="button" className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setFilter(f)}>
+            <button key={f} type="button" className={`btn filter-pill ${filter === f ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setFilter(f)}>
               {f === 'today' ? 'Bugün' : f === 'upcoming' ? 'Yaklaşan' : 'Tümü'}
             </button>
           ))}
@@ -113,28 +118,41 @@ export function TasksPage() {
         </select>
       </div>
 
-      <section className="card">
+      <section className="card card-elevated">
         {filtered.length === 0 ? (
-          <EmptyState title="Görev bulunamadı" description="Filtreleri değiştirin veya yeni görev ekleyin." actionLabel="İlk görevi ekle" onAction={() => navigate('/tasks/new')} />
+          <EmptyState icon="✅" title="Görev bulunamadı" description="Filtreleri değiştirin veya yeni görev ekleyin." actionLabel="İlk görevi ekle" onAction={() => navigate('/tasks/new')} />
         ) : (
           <ul className="task-list">
             {filtered.map((task) => (
               <li key={task.id} className="task-row">
-                <div>
+                <div className="task-row-main">
                   <strong>{task.title}</strong>
-                  <span className="muted">{task.courseCode} · {TASK_STATUS_LABELS[task.status]}</span>
-                  {task.dueDate && <span className="muted"> · {new Date(task.dueDate).toLocaleDateString('tr-TR')}</span>}
+                  <div className="task-meta">
+                    <span className="muted">{task.courseCode}</span>
+                    <StatusBadge status={task.status} />
+                    {task.dueDate && <span className="muted">📅 {new Date(task.dueDate).toLocaleDateString('tr-TR')}</span>}
+                  </div>
                 </div>
                 <div className="btn-group">
                   <button type="button" className="btn btn-sm btn-success" disabled={busyId === task.id} onClick={() => void changeStatus(task, 'Done')}>Tamamla</button>
                   <Link to={`/tasks/${task.id}/edit`} className="btn btn-sm btn-secondary">Düzenle</Link>
-                  <button type="button" className="btn btn-sm btn-danger" disabled={busyId === task.id} onClick={() => void removeTask(task.id)}>Sil</button>
+                  <button type="button" className="btn btn-sm btn-danger" disabled={busyId === task.id} onClick={() => setDeleteId(task.id)}>Sil</button>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <ConfirmModal
+        open={deleteId !== null}
+        title="Görevi sil"
+        message="Bu görevi kalıcı olarak silmek istediğinize emin misiniz?"
+        confirmLabel="Sil"
+        busy={busyId !== null}
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

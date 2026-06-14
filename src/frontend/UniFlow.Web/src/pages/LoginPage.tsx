@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { AuthShell } from '../components/AuthShell';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { PageLoader } from '../components/PageLoader';
 
@@ -27,18 +28,18 @@ export function LoginPage() {
   }
 
   return (
-    <div className="auth-shell">
-      <form className="auth-card card" onSubmit={handleSubmit}>
+    <AuthShell>
+      <form className="auth-card card card-elevated" onSubmit={handleSubmit}>
         <h1>Giriş Yap</h1>
         <p className="muted">UniFlow hesabınızla devam edin.</p>
         <ErrorBanner message={error} />
-        <label>E-posta<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
-        <label>Şifre<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" /></label>
+        <label>E-posta<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="ornek@universite.edu.tr" /></label>
+        <label>Şifre<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" placeholder="••••••••" /></label>
         <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
           {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
         </button>
-        <p className="muted center">Hesabınız yok mu? <Link to="/register">Kayıt olun</Link></p>
+        <p className="muted center" style={{ marginTop: '1.25rem' }}>Hesabınız yok mu? <Link to="/register">Kayıt olun</Link></p>
       </form>
-    </div>
+    </AuthShell>
   );
 }

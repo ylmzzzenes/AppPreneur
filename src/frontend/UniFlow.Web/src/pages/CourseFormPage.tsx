@@ -3,7 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { coursesApi, getErrorMessage } from '../api/services';
 import { ErrorBanner } from '../components/ErrorBanner';
 import { PageLoader } from '../components/PageLoader';
+import { PageHeader } from '../components/ui/PageHeader';
 import { useToast } from '../context/ToastContext';
+
+const COLOR_PRESETS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
 
 export function CourseFormPage() {
   const { id } = useParams();
@@ -15,7 +18,7 @@ export function CourseFormPage() {
   const [code, setCode] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState('');
+  const [color, setColor] = useState('#6366f1');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
@@ -31,7 +34,7 @@ export function CourseFormPage() {
           setCode(result.data.code);
           setTitle(result.data.title);
           setDescription(result.data.description ?? '');
-          setColor(result.data.color ?? '');
+          setColor(result.data.color ?? '#6366f1');
         }
         setLoading(false);
       }
@@ -59,17 +62,37 @@ export function CourseFormPage() {
 
   return (
     <div className="page">
-      <h1>{isEdit ? 'Dersi Düzenle' : 'Yeni Ders'}</h1>
+      <PageHeader
+        title={isEdit ? 'Dersi Düzenle' : 'Yeni Ders'}
+        subtitle={isEdit ? 'Ders bilgilerini güncelleyin' : 'Yeni bir ders ekleyin'}
+        actions={<button type="button" className="btn btn-secondary" onClick={() => navigate('/courses')}>← İptal</button>}
+      />
       <ErrorBanner message={error} />
-      <form className="card form-grid" onSubmit={handleSubmit}>
-        <label>Kod<input value={code} onChange={(e) => setCode(e.target.value)} required /></label>
-        <label>Ad<input value={title} onChange={(e) => setTitle(e.target.value)} required /></label>
-        <label>Açıklama<textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></label>
-        <label>Renk (hex)<input value={color} onChange={(e) => setColor(e.target.value)} placeholder="#3B82F6" /></label>
-        <div className="btn-group">
-          <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</button>
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/courses')}>İptal</button>
+      <form className="card card-elevated form-grid" onSubmit={handleSubmit}>
+        <div className="grid-2" style={{ gap: '0 1rem' }}>
+          <label>Ders kodu<input value={code} onChange={(e) => setCode(e.target.value)} required placeholder="CS101" /></label>
+          <label>Ders adı<input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Giriş Programlama" /></label>
         </div>
+        <label>Açıklama<textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Ders hakkında kısa not" /></label>
+        <label>
+          Renk
+          <div className="btn-group" style={{ marginTop: '0.35rem' }}>
+            {COLOR_PRESETS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%', background: c,
+                  border: color === c ? '3px solid var(--text)' : '2px solid var(--border)',
+                  cursor: 'pointer',
+                }}
+                aria-label={`Renk ${c}`}
+              />
+            ))}
+          </div>
+        </label>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</button>
       </form>
     </div>
   );
