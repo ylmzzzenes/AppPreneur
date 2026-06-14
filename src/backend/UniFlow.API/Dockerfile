@@ -9,7 +9,7 @@ COPY src/backend/UniFlow.Business/UniFlow.Business.csproj UniFlow.Business/
 COPY src/backend/UniFlow.DataAccess/UniFlow.DataAccess.csproj UniFlow.DataAccess/
 COPY src/backend/UniFlow.Entity/UniFlow.Entity.csproj UniFlow.Entity/
 
-RUN dotnet restore UniFlow.sln
+RUN dotnet restore UniFlow.API/UniFlow.API.csproj
 
 COPY src/backend/ ./
 WORKDIR /src/UniFlow.API
