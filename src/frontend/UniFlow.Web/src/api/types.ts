@@ -27,9 +27,32 @@ export interface RegisterRequest {
   displayName: string;
   password: string;
   major?: string;
+  personalityVibe?: PersonalityVibe;
 }
 
+export type PersonalityVibe = 'Friendly' | 'Strict' | 'Sarcastic' | 'Motivational' | 'Calm';
 export type TaskItemStatus = 'Pending' | 'Done' | 'Missed';
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  displayName: string;
+  major?: string;
+  academicGoal?: string;
+  personalityVibe: PersonalityVibe;
+  dailyStudyTargetMinutes?: number;
+  isOnboardingCompleted: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface UpdateOnboardingRequest {
+  displayName?: string;
+  major?: string;
+  academicGoal?: string;
+  personalityVibe?: PersonalityVibe;
+  dailyStudyTargetMinutes?: number;
+}
 
 export interface TaskItem {
   id: number;
@@ -48,6 +71,12 @@ export interface TaskItem {
   isAiGenerated: boolean;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface TaskListResponse {
+  items: TaskItem[];
+  pendingCount: number;
+  doneCount: number;
 }
 
 export interface DashboardTaskItem {
@@ -79,6 +108,22 @@ export interface Course {
   color?: string;
   taskCount: number;
   activeTaskCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCourseRequest {
+  code: string;
+  title: string;
+  description?: string;
+  color?: string;
+}
+
+export interface UpdateCourseRequest {
+  code: string;
+  title: string;
+  description?: string;
+  color?: string;
 }
 
 export interface CreateTaskRequest {
@@ -142,8 +187,47 @@ export interface WeeklySummaryResponse {
   isFallback: boolean;
 }
 
+export interface StudyPlanRequest {
+  courseId?: number;
+  days?: number;
+  focus?: string;
+}
+
+export interface StudyPlanTask {
+  title: string;
+  estimatedMinutes: number;
+  reason: string;
+}
+
+export interface StudyPlanDay {
+  date: string;
+  focus: string;
+  tasks: StudyPlanTask[];
+  tip: string;
+}
+
 export interface StudyPlanResponse {
   title: string;
   summary: string;
+  days: StudyPlanDay[];
   isFallback: boolean;
+}
+
+export interface TaskFeedbackRequest {
+  taskId: number;
+  newStatus: TaskItemStatus;
+}
+
+export interface TaskFeedbackResponse {
+  message: string;
+  tone: string;
+  nextAction: string;
+  isFallback: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
 }

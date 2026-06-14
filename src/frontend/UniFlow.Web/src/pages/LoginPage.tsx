@@ -2,67 +2,42 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ErrorBanner } from '../components/ErrorBanner';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PageLoader } from '../components/PageLoader';
 
 export function LoginPage() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, isBootstrapping, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (isAuthenticated && !isBootstrapping) return <Navigate to="/dashboard" replace />;
+  if (isBootstrapping) return <PageLoader label="Yönlendiriliyor..." />;
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      const message = await login({ email: email.trim(), password });
-      if (message) {
-        setError(message);
-      }
+      const msg = await login({ email: email.trim(), password });
+      if (msg) setError(msg);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="auth-page">
-      <form className="card auth-card" onSubmit={handleSubmit}>
+    <div className="auth-shell">
+      <form className="auth-card card" onSubmit={handleSubmit}>
         <h1>Giriş Yap</h1>
         <p className="muted">UniFlow hesabınızla devam edin.</p>
         <ErrorBanner message={error} />
-        <label>
-          E-posta
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
-        </label>
-        <label>
-          Şifre
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
-        </label>
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <label>E-posta<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
+        <label>Şifre<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" /></label>
+        <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
           {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
         </button>
-        {loading && <LoadingSpinner label="Kimlik doğrulanıyor..." />}
-        <p className="muted">
-          Hesabınız yok mu? <Link to="/register">Kayıt olun</Link>
-        </p>
+        <p className="muted center">Hesabınız yok mu? <Link to="/register">Kayıt olun</Link></p>
       </form>
     </div>
   );

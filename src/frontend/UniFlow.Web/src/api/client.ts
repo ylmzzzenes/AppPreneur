@@ -3,6 +3,12 @@ import type { ApiResult } from './types';
 
 const TOKEN_KEY = 'uniflow_access_token';
 
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: () => void): void {
+  unauthorizedHandler = handler;
+}
+
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -17,80 +23,63 @@ export function clearStoredToken(): void {
 
 function mapHttpStatusError<T>(status: number): ApiResult<T> | null {
   if (status === 401) {
+    unauthorizedHandler?.();
     return {
       isSuccess: false,
       error: { code: 'UNAUTHORIZED', message: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.' },
     };
   }
-
+  if (status === 409) {
+    return {
+      isSuccess: false,
+      error: { code: 'CONFLICT', message: 'Bu kayıt zaten mevcut.' },
+    };
+  }
   if (status === 429) {
     return {
       isSuccess: false,
       error: { code: 'RATE_LIMIT', message: 'Çok fazla istek. Kısa süre sonra tekrar deneyin.' },
     };
   }
-
   if (status >= 500) {
     return {
       isSuccess: false,
       error: { code: 'SERVER_ERROR', message: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.' },
     };
   }
-
   return null;
 }
 
 function mapFetchError<T>(error: unknown): ApiResult<T> {
   if (error instanceof DOMException && error.name === 'AbortError') {
-    return {
-      isSuccess: false,
-      error: { code: 'TIMEOUT', message: 'Sunucu süre içinde yanıt vermedi.' },
-    };
+    return { isSuccess: false, error: { code: 'TIMEOUT', message: 'Sunucu süre içinde yanıt vermedi.' } };
   }
-
   if (error instanceof TypeError) {
     return {
       isSuccess: false,
-      error: {
-        code: 'NETWORK',
-        message: 'Sunucuya bağlanılamıyor. API adresini ve bağlantınızı kontrol edin.',
-      },
+      error: { code: 'NETWORK', message: 'Sunucuya bağlanılamıyor. Bağlantınızı ve API adresini kontrol edin.' },
     };
   }
-
-  return {
-    isSuccess: false,
-    error: { code: 'CLIENT', message: 'Beklenmeyen bir hata oluştu.' },
-  };
+  return { isSuccess: false, error: { code: 'CLIENT', message: 'Beklenmeyen bir hata oluştu.' } };
 }
 
 async function parseBody<T>(response: Response): Promise<ApiResult<T>> {
   const statusError = mapHttpStatusError<T>(response.status);
-  if (statusError) {
-    return statusError;
-  }
+  if (statusError) return statusError;
 
   const text = await response.text();
   if (!text.trim()) {
-    return {
-      isSuccess: false,
-      error: { code: 'PARSE', message: 'Sunucu yanıtı okunamadı.' },
-    };
+    return { isSuccess: false, error: { code: 'PARSE', message: 'Sunucu yanıtı okunamadı.' } };
   }
 
   try {
     const parsed = JSON.parse(text) as ApiResult<T>;
-    if (typeof parsed.isSuccess === 'boolean') {
-      return parsed;
-    }
+    if (typeof parsed.isSuccess === 'boolean') return parsed;
   } catch {
     // fall through
   }
 
-  return {
-    isSuccess: false,
-    error: { code: 'PARSE', message: 'Sunucu yanıtı beklenen formatta değil.' },
-  };
+  return { isSuccess: false, error: { code: 'PARSE', message: 'Sunucu yanıtı beklenen formatta değil.' } };
 }
 
 type RequestOptions = {
@@ -108,9 +97,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (options.auth !== false) {
     const token = getStoredToken();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) headers.Authorization = `Bearer ${token}`;
   }
 
   if (options.body && !(options.body instanceof FormData)) {
@@ -124,7 +111,6 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       body: options.body ?? null,
       signal: controller.signal,
     });
-
     return await parseBody<T>(response);
   } catch (error) {
     return mapFetchError<T>(error);
